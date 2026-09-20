@@ -1,771 +1,155 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>탐구제안서 중간점검</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons CDN -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&display=swap');
-        body {
-            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-            /* 화면 캡처 및 복사 방지 보안 스타일 */
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
-        input, textarea, select {
-            -webkit-user-select: text;
-            -moz-user-select: text;
-            -ms-user-select: text;
-            user-select: text;
-        }
-        ::-webkit-scrollbar {
-            width: 7px;
-            height: 7px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-        /* 인쇄 및 캡처 전면 차단 */
-        @media print {
-            body {
-                display: none !important;
-            }
-        }
-    </style>
-</head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col" oncontextmenu="return false;">
+function renderTeacherReport(report) {
+    const container = document.getElementById('feedbackContainer');
 
-    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
-                    <i data-lucide="flask-conical" class="w-5 h-5"></i>
+    const issues = Array.isArray(report?.issues)
+        ? report.issues.slice(0, 5)
+        : [];
+
+    /* 문제가 발견되지 않은 경우 */
+    if (issues.length === 0) {
+        container.innerHTML = `
+            <div class="space-y-4">
+
+                <div class="p-5 rounded-2xl bg-emerald-50 border border-emerald-200">
+                    <div class="flex items-start gap-3">
+
+                        <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700
+                                    flex items-center justify-center shrink-0">
+                            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                        </div>
+
+                        <div>
+                            <h3 class="font-bold text-emerald-900 text-sm">
+                                큰 문제를 발견하지 못했어
+                            </h3>
+
+                            <p class="mt-1 text-xs leading-relaxed text-emerald-800">
+                                현재 작성 내용에서 우선적으로 수정해야 할
+                                뚜렷한 오류나 모순을 찾지 못했어.
+                            </p>
+                        </div>
+
+                    </div>
                 </div>
-                <div>
-                    <h1 class="font-bold text-slate-900 text-base sm:text-lg leading-tight">
-                        탐구제안서 중간점검
-                    </h1>
+
+                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200
+                            text-xs leading-relaxed text-slate-600">
+                    AI 점검은 참고용이야. 실제 실험의 안전성,
+                    수행 가능성 및 최종 내용은 담당 선생님과 다시 확인해.
                 </div>
+
             </div>
+        `;
 
-            <div class="flex items-center gap-2">
-                <!-- 작성 길라잡이 버튼 -->
-                <button type="button" onclick="openGuideModal()"
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 text-xs font-semibold transition-all">
-                    <i data-lucide="lightbulb" class="w-4 h-4 text-amber-600"></i>
-                    <span>작성 길라잡이</span>
-                </button>
+        lucide.createIcons();
+        return;
+    }
 
-                <button type="button" onclick="checkServerStatus()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-semibold transition-all"><i data-lucide="server" class="w-4 h-4"></i><span>Gemini 서버 상태</span></button>
 
-                <!-- 채점 기준표 버튼 -->
-                <button type="button" onclick="openRubricModal()"
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 text-xs font-semibold transition-all">
-                    <i data-lucide="clipboard-check" class="w-4 h-4 text-indigo-600"></i>
-                    <span>채점 기준표</span>
-                </button>
-            </div>
-        </div>
-    </header>
+    /* 문제가 발견된 경우 */
 
-    <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
-        <!-- 상단 안내 배너 -->
-        <div class="mb-6 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 text-white p-5 sm:p-6 shadow-lg relative overflow-hidden">
-            <div class="absolute right-0 bottom-0 opacity-10 translate-x-6 translate-y-6 pointer-events-none">
-                <i data-lucide="line-chart" class="w-64 h-64"></i>
-            </div>
-            <div class="relative z-10">
-                <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-200 border border-blue-400/30 text-xs font-medium mb-3">
-                    <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
-                    <span>객관적 분석 시스템</span>
-                </div>
-                <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-white mb-2">
-                    항목별 객관적 분석 및 실험 기구 적절성 점검
-                </h2>
-                <p class="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-3xl mb-3">
-                    주제, 동기, 목적, 실험 I·II 과정(시약 이동 기구, 반응 용기, 측정 도구 적절성) 및 그래프 축 설정에 대한 엄격한 객관적 분석 점검을 수행합니다. 미작성된 항목이나 부실한 내용을 철저히 지적합니다.
-                </p>
-                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-500/20 border border-amber-400/30 text-amber-200 text-xs">
-                    <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i>
-                    <span>피드백의 결과는 틀릴 수 있으니 최종 결정은 학생 본인이 합니다.</span>
-                </div>
-            </div>
-        </div>
+    const cards = issues.map((issue, index) => {
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        const area = escapeHtml(
+            issue?.area || '확인이 필요한 부분'
+        );
 
-            <div class="lg:col-span-7 space-y-6">
-                <form id="proposalForm" class="space-y-6" onsubmit="event.preventDefault();">
+        const problem = escapeHtml(
+            issue?.problem || '작성 내용을 다시 확인해봐.'
+        );
 
-                    <!-- 상단 제어 바 -->
-                    <div class="flex items-center justify-end gap-2 pb-1">
-                        <button type="button" onclick="saveToLocalStorage(true)"
-                            class="text-[11px] font-semibold text-slate-600 hover:text-slate-900 px-3 py-1.5 rounded-lg bg-white border border-slate-200 shadow-sm transition-all flex items-center gap-1">
-                            <i data-lucide="save" class="w-3.5 h-3.5"></i>
-                            임시 저장
-                        </button>
-                        <button type="button" onclick="resetForm()"
-                            class="text-[11px] font-semibold text-rose-600 hover:text-rose-800 px-3 py-1.5 rounded-lg bg-white border border-slate-200 shadow-sm transition-all flex items-center gap-1">
-                            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
-                            초기화
-                        </button>
+        return `
+            <div class="p-4 rounded-2xl border border-amber-200 bg-amber-50">
+
+                <div class="flex items-start gap-3">
+
+                    <div class="w-7 h-7 rounded-lg bg-amber-100
+                                text-amber-800 flex items-center
+                                justify-center font-bold text-xs shrink-0">
+                        ${index + 1}
                     </div>
 
-                    <!-- 1. 탐구 주제 -->
-                    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-3">
-                        <div class="flex items-center justify-between">
-                            <label class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                                <span class="w-6 h-6 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">1</span>
-                                <span>탐구 주제</span>
-                            </label>
-                            <span class="text-[11px] text-blue-600 font-medium bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
-                                공식 준수 필수
+                    <div class="min-w-0">
+
+                        <div class="flex items-center gap-2 mb-1">
+
+                            <span class="font-bold text-slate-900 text-sm">
+                                ${area}
                             </span>
+
+                            <span class="px-2 py-0.5 rounded-full
+                                         bg-white border border-amber-200
+                                         text-[10px] font-bold text-amber-700">
+                                다시 확인
+                            </span>
+
                         </div>
-                        <p class="text-xs text-slate-500 leading-relaxed">
-                            공식: <span class="font-semibold text-slate-700">[탐구 대상]의 [조작 변인 1]과 [조작 변인 2]에 따른 [종속 변인/반응 속도]의 탐구</span>
+
+                        <p class="text-xs sm:text-sm leading-relaxed text-slate-700">
+                            ${problem}
                         </p>
-                        <input type="text" id="topicInput" required
-                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                            placeholder="실험 I과 II의 조작 변인 2가지가 제목에 모두 포함되었는가?">
+
                     </div>
 
-                    <!-- 2. 탐구 동기 -->
-                    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-3">
-                        <div class="flex items-center justify-between">
-                            <label class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                                <span class="w-6 h-6 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">2</span>
-                                <span>탐구 동기</span>
-                            </label>
-                            <span class="text-[11px] text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">구체적 근거 기반</span>
-                        </div>
-                        <textarea id="motiveInput" rows="3" required
-                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-y"
-                            placeholder="교과서 원리, 뉴스 기사, 사회적 이슈, 일상 경험 등 구체적 배경 근거를 바탕으로 탐구 필요성을 서술하였는가?"></textarea>
-                    </div>
-
-                    <!-- 3. 탐구 목적 -->
-                    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-3">
-                        <div class="flex items-center justify-between">
-                            <label class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                                <span class="w-6 h-6 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">3</span>
-                                <span>탐구 목적</span>
-                            </label>
-                            <span class="text-[11px] text-indigo-600 font-medium bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-200">
-                                화학의 유용성 연계
-                            </span>
-                        </div>
-                        <textarea id="purposeInput" rows="2" required
-                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-y"
-                            placeholder="두 요인이 반응 속도에 미치는 영향을 규명하고, 실생활 문제 해결이나 환경 개선 등 화학의 유용성과 연계하여 작성하였는가?"></textarea>
-                    </div>
-
-                    <!-- 4. 실험 설계 I -->
-                    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4">
-                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                            <label class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                                <span class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">4</span>
-                                <span>실험 설계 I</span>
-                            </label>
-                            <span class="text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                                요인 선택 1
-                            </span>
-                        </div>
-
-                        <!-- 1) 실험하고자 하는 화학 반응 설명 -->
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">실험하고자 하는 화학 반응 설명</label>
-                            <textarea id="reaction1Input" rows="2" required
-                                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none resize-y"
-                                placeholder="수행할 화학 반응의 종류와 화학적 변화 양상이 과학적으로 타당하게 설명되었는가?"></textarea>
-                        </div>
-
-                        <!-- 2) 반응 속도 측정방법 작성 -->
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">반응 속도 측정방법 작성</label>
-                            <input type="text" id="measureMethod1Input" required
-                                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
-                                placeholder="기체 부피, 질량 변화, 도달 시간 등 정량적 측정 지표가 명시되었는가?">
-                        </div>
-
-                        <!-- 3) 가설 -->
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">가설</label>
-                            <input type="text" id="hypothesis1Input" required
-                                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
-                                placeholder="조작 변인과 종속 변인의 인과관계가 논리적 가설 형태로 설정되었는가?">
-                        </div>
-
-                        <!-- 4) 조작 요인 및 조작변인(3가지 구체적인 값) -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-700 mb-1">조작 요인</label>
-                                <select id="factor1Select" onchange="handleFactorChange(1)"
-                                    class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
-                                    <option value="농도">농도 (Concentration)</option>
-                                    <option value="표면적">표면적 (Surface Area)</option>
-                                    <option value="온도">온도 (Temperature)</option>
-                                    <option value="촉매">촉매 (Catalyst)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-700 mb-1">조작변인 (3가지 구체적인 값)</label>
-                                <input type="text" id="indep1Input" required
-                                    class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
-                                    placeholder="단위를 포함한 구체적인 3가지 조건값이 제시되었는가?">
-                            </div>
-                        </div>
-
-                        <!-- 5) 통제변인 -->
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">통제변인</label>
-                            <input type="text" id="control1Input" required
-                                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
-                                placeholder="오차를 방지하기 위해 일정하게 유지해야 할 조건들이 구체적으로 명시되었는가?">
-                        </div>
-
-                        <!-- 6) 실험과정 -->
-                        <div class="space-y-2 pt-2 border-t border-slate-100">
-                            <label class="block text-xs font-semibold text-slate-700">실험과정 (반응물 투입 기구, 시약 이동 기구, 측정 도구 적절성 검증 포함)</label>
-                            <div id="exp1StepsContainer" class="space-y-2"></div>
-                            <div class="flex items-center gap-2 pt-1">
-                                <button type="button" onclick="addExpStep(1)" class="text-xs px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 font-semibold">+ 단계 추가</button>
-                                <button type="button" onclick="removeExpStep(1)" class="text-xs px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 font-semibold">- 단계 삭제</button>
-                            </div>
-                        </div>
-
-                        <!-- 그래프 축 설정 (유형 1, 2, 3 포함) -->
-                        <div class="bg-slate-50/80 p-4 rounded-xl border border-slate-200/80 space-y-3">
-                            <span class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
-                                <i data-lucide="line-chart" class="w-4 h-4 text-emerald-600"></i>
-                                가상 실험 그래프 축 및 해석 설정
-                            </span>
-                            <div>
-                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">그래프 유형 선택</label>
-                                <select id="graphType1Select" onchange="handleGraphTypeChange(1)"
-                                    class="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
-                                    <option value="type1">[유형 1] 반응 시간에 따른 변화 관찰 (X축: 반응 시간 / Y축: 생성물 또는 반응물의 양)</option>
-                                    <option value="type2">[유형 2] 변인과 반응 속도 직접 비교 (X축: 조작변인 / Y축: 반응 속도)</option>
-                                    <option value="type3">[유형 3] 본인이 생각했을 때 과학적으로 타당한 방안 제시</option>
-                                </select>
-                            </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div>
-                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">X축 설정 (물리량 및 단위)</label>
-                                    <input type="text" id="xAxis1Input" required class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white" placeholder="선택한 유형에 맞는 물리량 및 단위 설정">
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Y축 설정 (물리량 및 단위)</label>
-                                    <input type="text" id="yAxis1Input" required class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white" placeholder="선택한 유형에 맞는 물리량 및 단위 설정">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">그래프 과학적 해석 계획 (작성 조건: 과학적 원리를 바탕으로 그래프의 경향성을 설명하고, 결론 도출 계획을 작성하였는가?)</label>
-                                <textarea id="graphInterp1Input" rows="2" required class="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs bg-white" placeholder="입자의 운동, 유효 충돌, 활성화 에너지 등 과학적 원리를 바탕으로 경향성과 결론 도출 계획을 세웠는가?"></textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 5. 실험 설계 II -->
-                    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4 relative">
-                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                            <label class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                                <span class="w-6 h-6 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center text-xs font-bold">5</span>
-                                <span>실험 설계 II</span>
-                            </label>
-                            <span class="text-[11px] text-purple-700 font-semibold bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200">
-                                요인 선택 2 (실험 I과 다르게)
-                            </span>
-                        </div>
-
-                        <!-- 요인 중복 실시간 경고 -->
-                        <div id="factorConflictAlert" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium flex items-center gap-2">
-                            <i data-lucide="alert-octagon" class="w-4 h-4 text-rose-600 shrink-0"></i>
-                            <span><b>주의:</b> 실험 I과 II의 조작 요인이 동일합니다. 서로 다른 요인을 선택하세요.</span>
-                        </div>
-
-                        <!-- 1) 실험하고자 하는 화학 반응 설명 -->
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">실험하고자 하는 화학 반응 설명</label>
-                            <textarea id="reaction2Input" rows="2" required
-                                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-purple-500 outline-none resize-y"
-                                placeholder="수행할 화학 반응의 종류와 화학적 변화 양상이 과학적으로 타당하게 설명되었는가?"></textarea>
-                        </div>
-
-                        <!-- 2) 반응 속도 측정방법 작성 -->
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">반응 속도 측정방법 작성</label>
-                            <input type="text" id="measureMethod2Input" required
-                                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-purple-500 outline-none"
-                                placeholder="기체 부피, 질량 변화, 도달 시간 등 정량적 측정 지표가 명시되었는가?">
-                        </div>
-
-                        <!-- 3) 가설 -->
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">가설</label>
-                            <input type="text" id="hypothesis2Input" required
-                                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-purple-500 outline-none"
-                                placeholder="조작 변인과 종속 변인의 인과관계가 논리적 가설 형태로 설정되었는가?">
-                        </div>
-
-                        <!-- 4) 조작 요인 및 조작변인(3가지 구체적인 값) -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-700 mb-1">조작 요인</label>
-                                <select id="factor2Select" onchange="handleFactorChange(2)"
-                                    class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-purple-500 outline-none">
-                                    <option value="농도">농도 (Concentration)</option>
-                                    <option value="표면적">표면적 (Surface Area)</option>
-                                    <option value="온도" selected>온도 (Temperature)</option>
-                                    <option value="촉매">촉매 (Catalyst)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-700 mb-1">조작변인 (3가지 구체적인 값)</label>
-                                <input type="text" id="indep2Input" required
-                                    class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-purple-500 outline-none"
-                                    placeholder="단위를 포함한 구체적인 3가지 조건값이 제시되었는가?">
-                            </div>
-                        </div>
-
-                        <!-- 5) 통제변인 -->
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">통제변인</label>
-                            <input type="text" id="control2Input" required
-                                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-purple-500 outline-none"
-                                placeholder="오차를 방지하기 위해 일정하게 유지해야 할 조건들이 구체적으로 명시되었는가?">
-                        </div>
-
-                        <!-- 6) 실험과정 -->
-                        <div class="space-y-2 pt-2 border-t border-slate-100">
-                            <label class="block text-xs font-semibold text-slate-700">실험과정 (반응물 투입 기구, 시약 이동 기구, 측정 도구 적절성 검증 포함)</label>
-                            <div id="exp2StepsContainer" class="space-y-2"></div>
-                            <div class="flex items-center gap-2 pt-1">
-                                <button type="button" onclick="addExpStep(2)" class="text-xs px-3 py-1.5 rounded-lg border border-purple-300 bg-purple-50 text-purple-800 font-semibold">+ 단계 추가</button>
-                                <button type="button" onclick="removeExpStep(2)" class="text-xs px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 font-semibold">- 단계 삭제</button>
-                            </div>
-                        </div>
-
-                        <!-- 그래프 축 설정 (유형 1, 2, 3 포함) -->
-                        <div class="bg-slate-50/80 p-4 rounded-xl border border-slate-200/80 space-y-3">
-                            <span class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
-                                <i data-lucide="line-chart" class="w-4 h-4 text-purple-600"></i>
-                                가상 실험 그래프 축 및 해석 설정
-                            </span>
-                            <div>
-                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">그래프 유형 선택</label>
-                                <select id="graphType2Select" onchange="handleGraphTypeChange(2)"
-                                    class="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs bg-white focus:ring-2 focus:ring-purple-500 outline-none">
-                                    <option value="type1">[유형 1] 반응 시간에 따른 변화 관찰 (X축: 반응 시간 / Y축: 생성물 또는 반응물의 양)</option>
-                                    <option value="type2">[유형 2] 변인과 반응 속도 직접 비교 (X축: 조작변인 / Y축: 반응 속도)</option>
-                                    <option value="type3">[유형 3] 본인이 생각했을 때 과학적으로 타당한 방안 제시</option>
-                                </select>
-                            </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div>
-                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">X축 설정 (물리량 및 단위)</label>
-                                    <input type="text" id="xAxis2Input" required class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white" placeholder="선택한 유형에 맞는 물리량 및 단위 설정">
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Y축 설정 (물리량 및 단위)</label>
-                                    <input type="text" id="yAxis2Input" required class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white" placeholder="선택한 유형에 맞는 물리량 및 단위 설정">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">그래프 과학적 해석 계획 (작성 조건: 과학적 원리를 바탕으로 그래프의 경향성을 설명하고, 결론 도출 계획을 작성하였는가?)</label>
-                                <textarea id="graphInterp2Input" rows="2" required class="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs bg-white" placeholder="입자의 운동, 유효 충돌, 활성화 에너지 등 과학적 원리를 바탕으로 경향성과 결론 도출 계획을 세웠는가?"></textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 중간점검 결과 받기 버튼 그룹 -->
-                    <div class="pt-2">
-                        <button type="button" id="aiFeedbackButton" onclick="requestFeedback()"
-                            class="w-full py-3.5 px-5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-slate-900 hover:from-blue-700 hover:to-slate-950 text-white font-bold text-sm shadow-md flex items-center justify-center gap-2 transition-all">
-                            <i data-lucide="sparkles" class="w-4 h-4 text-amber-300"></i>
-                            <span>중간점검 결과 받기</span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <div class="lg:col-span-5 space-y-4">
-                <div class="sticky top-20">
-                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                        <div class="p-4 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <i data-lucide="bar-chart-3" class="w-4 h-4 text-blue-600"></i>
-                                <h3 class="font-bold text-slate-800 text-sm">항목별 객관적 점검 결과</h3>
-                            </div>
-                        </div>
-
-                        <div id="feedbackContainer" class="p-5 max-h-[calc(100vh-140px)] overflow-y-auto space-y-4 text-xs sm:text-sm">
-                            <div class="text-center py-12 px-4 space-y-3">
-                                <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 mx-auto flex items-center justify-center shadow-inner">
-                                    <i data-lucide="check-square" class="w-7 h-7"></i>
-                                </div>
-                                <h4 class="font-bold text-slate-800 text-sm">분석 대기 중</h4>
-                                <p class="text-slate-500 text-xs max-w-xs mx-auto leading-relaxed">
-                                    <b>[종합 평가 및 탐구 주제, 동기, 목적, 실험 I·II 과정 및 기구 적절성, 그래프]</b> 항목별 객관적 진단 결과가 여기에 표시됩니다.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
                 </div>
+
             </div>
+        `;
+    }).join('');
+
+
+    container.innerHTML = `
+        <div class="space-y-4">
+
+            <div class="p-4 rounded-2xl bg-slate-900 text-white">
+
+                <div class="flex items-center gap-2 mb-2">
+
+                    <i data-lucide="search-check"
+                       class="w-5 h-5 text-amber-300"></i>
+
+                    <h3 class="font-bold text-sm">
+                        중간점검 결과
+                    </h3>
+
+                </div>
+
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    작성 내용에서 우선 다시 확인하면 좋은 부분을
+                    ${issues.length}개 찾았어.
+                </p>
+
+            </div>
+
+
+            ${cards}
+
+
+            <div class="p-4 rounded-xl bg-blue-50 border border-blue-200">
+
+                <div class="flex gap-2">
+
+                    <i data-lucide="info"
+                       class="w-4 h-4 text-blue-600 shrink-0 mt-0.5"></i>
+
+                    <p class="text-xs leading-relaxed text-blue-900">
+                        AI가 제안서를 대신 수정하거나 정답을 작성하지 않아.
+                        위에서 표시된 부분을 참고해서 네가 직접 내용을
+                        다시 확인하고 수정해봐.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <p class="text-[11px] text-center text-slate-400 leading-relaxed">
+                AI의 판단은 틀릴 수 있어.
+                최종 내용과 실험 안전성은 담당 선생님과 확인해.
+            </p>
 
         </div>
-    </main>
+    `;
 
-    <!-- [모달 1] 작성 길라잡이 -->
-    <div id="guideModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="font-bold text-slate-900 text-sm">사전 탐구제안서 작성 가이드</h3>
-                <button type="button" onclick="closeGuideModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-            <div class="space-y-3 text-xs text-slate-700 leading-relaxed">
-                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
-                    <p class="font-bold text-slate-900">1. 실험 기구의 적절성 점검</p>
-                    <p class="text-slate-600">반응물을 넣을 기구, 시약을 옮길 기구(피펫, 눈금실린더 등), 반응을 진행할 용기(비커, 삼각플라스크 등), 속도를 측정할 도구(초시계 등)가 실험 과정에 적절히 반영되어 있는지 확인합니다.</p>
-                </div>
-                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
-                    <p class="font-bold text-slate-900">2. 그래프 축 설정 및 해석 팁</p>
-                    <p class="text-slate-600">유형1(반응 시간에 따른 변화), 유형2(조작변인과 반응 속도 직접 비교), 유형3(과학적 방안 제시) 중 선택하고, 과학적 원리(입자 운동, 유효 충돌 등)를 바탕으로 경향성과 결론 도출 계획을 서술해야 합니다.</p>
-                </div>
-            </div>
-            <div class="flex justify-end pt-2 border-t border-slate-100">
-                <button type="button" onclick="closeGuideModal()" class="px-4 py-2 bg-slate-800 text-white rounded-lg text-xs font-semibold">확인</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- [모달] Gemini 서버 상태 -->
-    <div id="serverStatusModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-        <div class="w-full max-w-md rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden">
-            <div class="p-5 border-b border-slate-100 flex items-center justify-between">
-                <div><h3 class="font-bold text-slate-900">Gemini 서버 연결</h3><p class="text-[11px] text-slate-500 mt-1">API 키는 학생의 브라우저에 저장되지 않아.</p></div>
-                <button type="button" onclick="closeServerStatusModal()" class="p-2 rounded-lg hover:bg-slate-100"><i data-lucide="x" class="w-4 h-4"></i></button>
-            </div>
-            <div class="p-5 space-y-3">
-                <div id="serverStatusBox" class="p-4 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-600">서버 상태를 확인하는 중...</div>
-                <div class="p-3 rounded-xl bg-blue-50 border border-blue-200 text-[11px] leading-relaxed text-blue-900">Gemini API 키는 서버의 환경변수 <b>GEMINI_API_KEY</b>에만 저장하고, 학생용 HTML에는 넣지 않는 구조야.</div>
-            </div>
-            <div class="p-4 border-t border-slate-100 flex justify-end"><button type="button" onclick="closeServerStatusModal()" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-semibold">닫기</button></div>
-        </div>
-    </div>
-
-    <script>
-        let exp1StepCount = 3;
-        let exp2StepCount = 3;
-        let isAnalyzing = false;
-        const GEMINI_MODEL = 'gemini-3.8-flash';
-        const GEMINI_KEY_STORAGE = 'gemini_api_key';
-
-        window.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
-            renderExpSteps(1);
-            renderExpSteps(2);
-            loadFromLocalStorage();
-            handleFactorChange(1);
-            handleFactorChange(2);
-            handleGraphTypeChange(1);
-            handleGraphTypeChange(2);
-
-            document.addEventListener('input', () => saveToLocalStorage(false));
-            document.addEventListener('keydown', (e) => {
-                if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 's' || e.key === 'u')) {
-                    e.preventDefault();
-                }
-            });
-        });
-
-        function openGuideModal() { document.getElementById('guideModal').classList.remove('hidden'); document.getElementById('guideModal').classList.add('flex'); }
-        function closeGuideModal() { document.getElementById('guideModal').classList.add('hidden'); document.getElementById('guideModal').classList.remove('flex'); }
-        function openRubricModal() { document.getElementById('rubricModal').classList.remove('hidden'); document.getElementById('rubricModal').classList.add('flex'); }
-        function closeRubricModal() { document.getElementById('rubricModal').classList.add('hidden'); document.getElementById('rubricModal').classList.remove('flex'); }
-
-        function renderExpSteps(expNum) {
-            const container = document.getElementById(`exp${expNum}StepsContainer`);
-            const currentCount = expNum === 1 ? exp1StepCount : exp2StepCount;
-            const existingValues = [];
-            for (let i = 1; i <= 5; i++) {
-                const el = document.getElementById(`exp${expNum}Step${i}`);
-                existingValues.push(el ? el.value : '');
-            }
-            container.innerHTML = '';
-            for (let i = 1; i <= currentCount; i++) {
-                const stepDiv = document.createElement('div');
-                stepDiv.className = 'flex items-center gap-2';
-                const badge = document.createElement('span');
-                badge.className = 'w-14 text-center py-2 rounded-lg bg-slate-100 text-slate-700 font-bold text-[11px] shrink-0 border border-slate-200';
-                badge.textContent = `${i}단계`;
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.id = `exp${expNum}Step${i}`;
-                input.className = 'flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white outline-none focus:ring-2 focus:ring-blue-500';
-                input.placeholder = `${i}단계: 시약 이동 기구, 반응 용기, 측정 도구 적절성 반영`;
-                input.value = existingValues[i - 1] || '';
-                stepDiv.append(badge, input);
-                container.appendChild(stepDiv);
-            }
-        }
-
-        function addExpStep(num) {
-            if (num === 1 && exp1StepCount < 5) { exp1StepCount++; renderExpSteps(1); saveToLocalStorage(false); }
-            if (num === 2 && exp2StepCount < 5) { exp2StepCount++; renderExpSteps(2); saveToLocalStorage(false); }
-        }
-        function removeExpStep(num) {
-            if (num === 1 && exp1StepCount > 3) { exp1StepCount--; renderExpSteps(1); saveToLocalStorage(false); }
-            if (num === 2 && exp2StepCount > 3) { exp2StepCount--; renderExpSteps(2); saveToLocalStorage(false); }
-        }
-
-        function handleFactorChange(num) {
-            const f1 = document.getElementById('factor1Select').value;
-            const f2 = document.getElementById('factor2Select').value;
-            const alertBox = document.getElementById('factorConflictAlert');
-            if (f1 && f2 && f1 === f2) alertBox.classList.remove('hidden');
-            else alertBox.classList.add('hidden');
-        }
-
-        function handleGraphTypeChange(num) {
-            const type = document.getElementById(`graphType${num}Select`).value;
-            const x = document.getElementById(`xAxis${num}Input`);
-            const y = document.getElementById(`yAxis${num}Input`);
-            const presets = {
-                type1: { x: '반응 시간 (s)', y: '생성물의 양 (mL 또는 g) / 반응물의 양' },
-                type2: { x: '조작변인 (단위 포함)', y: '반응 속도 (단위 포함)' },
-                type3: { x: '비교 기준 또는 조작변인 (단위 포함)', y: '개선 효과 또는 반응 속도 (단위 포함)' }
-            };
-            const preset = presets[type];
-            if (preset) { x.placeholder = preset.x; y.placeholder = preset.y; }
-        }
-
-        function saveToLocalStorage(toast = false) {
-            localStorage.setItem('rate_proposal_draft', JSON.stringify(getFormData()));
-            if (toast) alert('임시 저장되었습니다.');
-        }
-
-        function loadFromLocalStorage() {
-            const raw = localStorage.getItem('rate_proposal_draft');
-            if (!raw) return;
-            try {
-                const d = JSON.parse(raw);
-                const fields = {
-                    topicInput:d.topic, motiveInput:d.motive, purposeInput:d.purpose,
-                    reaction1Input:d.reaction1, measureMethod1Input:d.measureMethod1, hypothesis1Input:d.hypothesis1,
-                    factor1Select:d.factor1, indep1Input:d.indep1, control1Input:d.control1, graphType1Select:d.graphType1,
-                    xAxis1Input:d.xAxis1, yAxis1Input:d.yAxis1, graphInterp1Input:d.graphInterp1,
-                    reaction2Input:d.reaction2, measureMethod2Input:d.measureMethod2, hypothesis2Input:d.hypothesis2,
-                    factor2Select:d.factor2, indep2Input:d.indep2, control2Input:d.control2, graphType2Select:d.graphType2,
-                    xAxis2Input:d.xAxis2, yAxis2Input:d.yAxis2, graphInterp2Input:d.graphInterp2
-                };
-                Object.entries(fields).forEach(([id,value]) => { const el=document.getElementById(id); if(el && value!==undefined && value!==null) el.value=value; });
-                exp1StepCount = Math.min(5, Math.max(3, Number(d.exp1StepCount)||3));
-                exp2StepCount = Math.min(5, Math.max(3, Number(d.exp2StepCount)||3));
-                renderExpSteps(1); renderExpSteps(2);
-                (d.steps1||[]).forEach((v,i)=>{const el=document.getElementById(`exp1Step${i+1}`); if(el)el.value=v;});
-                (d.steps2||[]).forEach((v,i)=>{const el=document.getElementById(`exp2Step${i+1}`); if(el)el.value=v;});
-            } catch(e) { console.error(e); localStorage.removeItem('rate_proposal_draft'); }
-        }
-
-        function resetForm() {
-            if (!confirm('작성한 탐구제안서를 모두 초기화하시겠습니까?')) return;
-            document.getElementById('proposalForm').reset();
-            localStorage.removeItem('rate_proposal_draft');
-            exp1StepCount=3; exp2StepCount=3; renderExpSteps(1); renderExpSteps(2);
-            handleFactorChange(1); handleFactorChange(2); handleGraphTypeChange(1); handleGraphTypeChange(2);
-            resetFeedbackArea();
-        }
-
-        function resetFeedbackArea() {
-            const container=document.getElementById('feedbackContainer');
-            container.innerHTML=`<div class="text-center py-12 px-4 space-y-3"><div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 mx-auto flex items-center justify-center shadow-inner"><i data-lucide="check-square" class="w-7 h-7"></i></div><h4 class="font-bold text-slate-800 text-sm">Gemini 점검 대기 중</h4><p class="text-slate-500 text-xs max-w-sm mx-auto leading-relaxed">작성한 탐구제안서 전체를 Gemini가 교사의 관점에서 항목별로 점검하고, 수정이 필요한 부분과 구체적인 개선 방향을 제시합니다.</p></div>`;
-            lucide.createIcons();
-        }
-
-        function getFormData() {
-            const s1=[],s2=[];
-            for(let i=1;i<=exp1StepCount;i++){const el=document.getElementById(`exp1Step${i}`);if(el&&el.value.trim())s1.push(el.value.trim());}
-            for(let i=1;i<=exp2StepCount;i++){const el=document.getElementById(`exp2Step${i}`);if(el&&el.value.trim())s2.push(el.value.trim());}
-            return {
-                topic:document.getElementById('topicInput').value.trim(), motive:document.getElementById('motiveInput').value.trim(), purpose:document.getElementById('purposeInput').value.trim(),
-                reaction1:document.getElementById('reaction1Input').value.trim(), measureMethod1:document.getElementById('measureMethod1Input').value.trim(), hypothesis1:document.getElementById('hypothesis1Input').value.trim(), factor1:document.getElementById('factor1Select').value, indep1:document.getElementById('indep1Input').value.trim(), control1:document.getElementById('control1Input').value.trim(), graphType1:document.getElementById('graphType1Select').value, xAxis1:document.getElementById('xAxis1Input').value.trim(), yAxis1:document.getElementById('yAxis1Input').value.trim(), graphInterp1:document.getElementById('graphInterp1Input').value.trim(), steps1:s1,
-                reaction2:document.getElementById('reaction2Input').value.trim(), measureMethod2:document.getElementById('measureMethod2Input').value.trim(), hypothesis2:document.getElementById('hypothesis2Input').value.trim(), factor2:document.getElementById('factor2Select').value, indep2:document.getElementById('indep2Input').value.trim(), control2:document.getElementById('control2Input').value.trim(), graphType2:document.getElementById('graphType2Select').value, xAxis2:document.getElementById('xAxis2Input').value.trim(), yAxis2:document.getElementById('yAxis2Input').value.trim(), graphInterp2:document.getElementById('graphInterp2Input').value.trim(), steps2:s2,
-                exp1StepCount, exp2StepCount
-            };
-        }
-
-        function validateProposal(data) {
-            const missing=[];
-            const required=[['탐구 주제',data.topic],['탐구 동기',data.motive],['탐구 목적',data.purpose],['실험 I의 화학반응',data.reaction1],['실험 I의 측정방법',data.measureMethod1],['실험 I의 가설',data.hypothesis1],['실험 I의 조작변인 3수치',data.indep1],['실험 I의 통제변인',data.control1],['실험 I의 과정',data.steps1.join(' ')],['실험 II의 화학반응',data.reaction2],['실험 II의 측정방법',data.measureMethod2],['실험 II의 가설',data.hypothesis2],['실험 II의 조작변인 3수치',data.indep2],['실험 II의 통제변인',data.control2],['실험 II의 과정',data.steps2.join(' ')]];
-            required.forEach(([label,value])=>{if(!value||value.length<2)missing.push(label);});
-            return missing;
-        }
-
-        function requestFeedback() {
-            if(isAnalyzing)return;
-            const data=getFormData();
-            if(data.factor1===data.factor2){alert('실험 I과 II의 조작 요인이 동일합니다. 서로 다른 요인을 선택하세요.');return;}
-            const missing=validateProposal(data);
-            if(missing.length>0){
-                const ok=confirm(`아직 작성이 부족한 항목이 ${missing.length}개 있습니다.\n\n${missing.slice(0,8).join('\n')}${missing.length>8?'\n외 추가 항목':''}\n\n그래도 Gemini에게 점검을 요청할까요?`);
-                if(!ok)return;
-            }
-            saveToLocalStorage(false);
-            executeAiFeedback(data);
-        }
-
-        function openServerStatusModal(){
-            const modal=document.getElementById('serverStatusModal');
-            modal.classList.remove('hidden'); modal.classList.add('flex');
-            checkServerStatus(true);
-        }
-        function closeServerStatusModal(){
-            const modal=document.getElementById('serverStatusModal');
-            modal.classList.add('hidden'); modal.classList.remove('flex');
-        }
-        async function checkServerStatus(fromModal=false){
-            if(!fromModal) openServerStatusModal();
-            const box=document.getElementById('serverStatusBox');
-            box.innerHTML='<span class="font-semibold">Gemini 서버 연결 상태를 확인하는 중...</span>';
-            try{
-                const response=await fetch('/api/health',{headers:{'Accept':'application/json'}});
-                const data=await response.json().catch(()=>({}));
-                if(!response.ok) throw new Error(data.message||`서버 오류 (${response.status})`);
-                box.innerHTML='<div class="flex items-center gap-2 text-emerald-700 font-bold"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> 서버 연결 정상</div><p class="mt-2 text-xs text-slate-500">학생 브라우저에서는 API 키를 보관하지 않고, 점검 요청만 서버로 전달해.</p>';
-            }catch(e){
-                box.innerHTML=`<div class="flex items-center gap-2 text-rose-700 font-bold"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> 서버에 연결할 수 없어</div><p class="mt-2 text-xs text-slate-500">${escapeHtml(e.message)}</p>`;
-            }
-        }
-
-        function buildTeacherPrompt(data){
-            return `당신은 고등학교 화학 교사이자 탐구보고서 지도교사입니다. 학생의 탐구제안서를 '대신 작성하거나 무조건 칭찬하는 AI'가 아니라, 실제 중간점검을 하는 교사처럼 엄격하지만 학생이 수정할 수 있도록 구체적으로 피드백하세요.
-
-[점검 원칙]
-- 학생이 실제로 작성한 내용만 근거로 판단하세요. 없는 내용을 추측해서 채우지 마세요.
-- 과학적으로 틀렸거나 근거가 부족한 부분은 명확하게 지적하세요.
-- '좋다/나쁘다'만 말하지 말고 왜 그런지 설명하세요.
-- 실험에서 조작변인, 종속변인, 통제변인의 관계가 맞는지 확인하세요.
-- '3수치'가 실제로 서로 다른 3개의 수준을 의미하는지 확인하세요.
-- 측정방법이 종속변인을 실제로 측정할 수 있는지 확인하세요.
-- 실험 과정에 필요한 기구와 측정 절차가 빠져 있지 않은지 확인하세요.
-- 그래프의 X축은 무엇을 변화시키는지, Y축은 무엇을 측정하는지 일관성이 있는지 확인하세요.
-- 실험 I과 II가 서로 다른 조작요인을 비교한다는 구조가 유지되는지 확인하세요.
-- 학생 수준에서 수정할 수 있는 구체적인 문장 예시를 일부 제시하되, 학생의 탐구를 통째로 대신 작성하지 마세요.
-- 평가 점수, 등급, 합격/불합격을 임의로 만들지 마세요.
-
-반드시 아래 JSON 형식으로만 답하세요.
-{
-  "overall": {"summary":"", "strengths":[""], "urgentFixes":[""]},
-  "topic": {"status":"충분|보완필요|미작성", "feedback":"", "suggestion":""},
-  "motive": {"status":"충분|보완필요|미작성", "feedback":"", "suggestion":""},
-  "purpose": {"status":"충분|보완필요|미작성", "feedback":"", "suggestion":""},
-  "experiment1": {"status":"충분|보완필요|미작성", "reaction":"", "measurement":"", "hypothesis":"", "variables":"", "threeLevels":"", "controls":"", "equipmentProcess":"", "graph":"", "suggestion":""},
-  "experiment2": {"status":"충분|보완필요|미작성", "reaction":"", "measurement":"", "hypothesis":"", "variables":"", "threeLevels":"", "controls":"", "equipmentProcess":"", "graph":"", "suggestion":""},
-  "finalChecklist":[{"item":"", "status":"완료|보완필요|미작성", "why":""}],
-  "nextSteps":["", "", ""]
+    lucide.createIcons();
 }
-
-[학생 탐구제안서]
-주제: ${data.topic||'미작성'}
-동기: ${data.motive||'미작성'}
-목적: ${data.purpose||'미작성'}
-
-실험 I
-조작요인: ${data.factor1||'미선택'}
-화학반응: ${data.reaction1||'미작성'}
-측정방법: ${data.measureMethod1||'미작성'}
-가설: ${data.hypothesis1||'미작성'}
-조작변인/3수치: ${data.indep1||'미작성'}
-통제변인: ${data.control1||'미작성'}
-과정: ${data.steps1.length?data.steps1.join(' → '):'미작성'}
-그래프 유형: ${data.graphType1||'미선택'}
-X축: ${data.xAxis1||'미작성'}
-Y축: ${data.yAxis1||'미작성'}
-그래프 해석 계획: ${data.graphInterp1||'미작성'}
-
-실험 II
-조작요인: ${data.factor2||'미선택'}
-화학반응: ${data.reaction2||'미작성'}
-측정방법: ${data.measureMethod2||'미작성'}
-가설: ${data.hypothesis2||'미작성'}
-조작변인/3수치: ${data.indep2||'미작성'}
-통제변인: ${data.control2||'미작성'}
-과정: ${data.steps2.length?data.steps2.join(' → '):'미작성'}
-그래프 유형: ${data.graphType2||'미선택'}
-X축: ${data.xAxis2||'미작성'}
-Y축: ${data.yAxis2||'미작성'}
-그래프 해석 계획: ${data.graphInterp2||'미작성'}`;
-        }
-
-        async function executeAiFeedback(data){
-            const container=document.getElementById('feedbackContainer');
-            isAnalyzing=true;
-            const btn=document.getElementById('aiFeedbackButton');
-            if(btn){btn.disabled=true;btn.classList.add('opacity-60','cursor-not-allowed');}
-            container.innerHTML=`<div class="py-12 text-center space-y-3"><div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div><p class="text-sm font-bold text-slate-700">Gemini가 탐구제안서를 교사 관점에서 점검하고 있어...</p><p class="text-xs text-slate-500">주제 → 동기 → 목적 → 실험 I·II → 그래프 순서로 분석 중이야.</p></div>`;
-            try{
-                const response=await fetch('/api/feedback',{
-                    method:'POST',
-                    headers:{'Content-Type':'application/json','Accept':'application/json'},
-                    body:JSON.stringify({proposal:data})
-                });
-                const result=await response.json().catch(()=>({}));
-                if(!response.ok) throw new Error(result.message||`서버 오류 (${response.status})`);
-                if(!result.report) throw new Error('서버에서 분석 결과를 받지 못했습니다.');
-                renderTeacherReport(result.report);
-            }catch(e){
-                container.innerHTML=`<div class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm space-y-2"><b>Gemini 점검 중 오류가 발생했어.</b><p>${escapeHtml(e.message)}</p><button type="button" onclick="checkServerStatus()" class="px-3 py-1.5 bg-white border border-rose-200 rounded-lg font-semibold text-xs">서버 상태 확인</button></div>`;
-            }finally{
-                isAnalyzing=false;
-                if(btn){btn.disabled=false;btn.classList.remove('opacity-60','cursor-not-allowed');}
-            }
-        }
-
-        function parseLooseJson(text){
-            const cleaned=text.replace(/^```json\s*/i,'').replace(/```$/,'').trim();
-            return JSON.parse(cleaned);
-        }
-        function escapeHtml(value){return String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');}
-        function statusBadge(status){
-            const map={충분:['bg-emerald-50','text-emerald-700','border-emerald-200','체크'],보완필요:['bg-amber-50','text-amber-700','border-amber-200','보완'],미작성:['bg-rose-50','text-rose-700','border-rose-200','미작성'],완료:['bg-emerald-50','text-emerald-700','border-emerald-200','완료']};
-            const [bg,txt,border,label]=map[status]||map.보완필요;
-            return `<span class="inline-flex items-center px-2 py-0.5 rounded-full border ${bg} ${txt} ${border} text-[10px] font-bold">${label}</span>`;
-        }
-        function bulletList(items){return (items||[]).filter(Boolean).map(x=>`<li>${escapeHtml(x)}</li>`).join('');}
-        function renderExperimentCard(title,exp){
-            const rows=[['화학반응 설명',exp.reaction],['측정방법',exp.measurement],['가설',exp.hypothesis],['변인 설정',exp.variables],['3수치 확인',exp.threeLevels],['통제변인',exp.controls],['기구·과정',exp.equipmentProcess],['그래프',exp.graph]];
-            return `<section class="border border-slate-200 rounded-2xl overflow-hidden"><div class="px-4 py-3 bg-slate-50 flex items-center justify-between"><h4 class="font-bold text-slate-900 text-sm">${title}</h4>${statusBadge(exp.status)}</div><div class="divide-y divide-slate-100">${rows.map(([k,v])=>`<div class="p-3"><div class="text-[11px] font-bold text-slate-500 mb-1">${k}</div><div class="text-xs leading-relaxed text-slate-700">${escapeHtml(v||'작성 내용 없음')}</div></div>`).join('')}</div>${exp.suggestion?`<div class="m-3 p-3 bg-blue-50 border border-blue-100 rounded-xl"><div class="text-[11px] font-bold text-blue-700 mb-1">💡 수정 방향</div><div class="text-xs leading-relaxed text-blue-900">${escapeHtml(exp.suggestion)}</div></div>`:''}</section>`;
-        }
-        function renderTeacherReport(r){
-            const container=document.getElementById('feedbackContainer');
-            const sections=[['탐구 주제',r.topic],['탐구 동기',r.motive],['탐구 목적',r.purpose]];
-            container.innerHTML=`<div class="space-y-4 text-xs leading-relaxed">
-                <div class="p-4 bg-slate-900 text-white rounded-2xl"><div class="flex items-center justify-between mb-2"><h3 class="font-bold text-sm">Gemini 교사형 종합 점검</h3><span class="text-[10px] bg-white/15 px-2 py-1 rounded-full">${GEMINI_MODEL}</span></div><p class="text-slate-200">학생이 직접 수정할 수 있도록 근거와 수정 방향을 중심으로 피드백했어.</p></div>
-                <div class="p-4 bg-amber-50 border border-amber-200 rounded-2xl"><b class="text-amber-900">주의</b><p class="mt-1 text-amber-800">AI 피드백은 참고용이야. 실험의 실제 안전성·수행 가능성·학교 수업 기준은 담당 선생님의 확인이 필요해.</p></div>
-                <section class="border border-slate-200 rounded-2xl p-4"><div class="flex items-center justify-between mb-2"><h4 class="font-bold text-sm">1. 전체 종합 평가</h4></div><p class="text-slate-700 mb-3">${escapeHtml(r.overall?.summary||'종합 평가 없음')}</p><div class="grid md:grid-cols-2 gap-3"><div class="bg-emerald-50 rounded-xl p-3"><b class="text-emerald-800">잘 된 점</b><ul class="list-disc ml-4 mt-1 space-y-1 text-emerald-900">${bulletList(r.overall?.strengths)}</ul></div><div class="bg-rose-50 rounded-xl p-3"><b class="text-rose-800">우선 수정할 점</b><ul class="list-disc ml-4 mt-1 space-y-1 text-rose-900">${bulletList(r.overall?.urgentFixes)}</ul></div></div></section>
-                ${sections.map(([title,x])=>`<section class="border border-slate-200 rounded-2xl p-4"><div class="flex items-center justify-between mb-2"><h4 class="font-bold text-sm">${title}</h4>${statusBadge(x?.status)}</div><p>${escapeHtml(x?.feedback||'')}</p>${x?.suggestion?`<div class="mt-3 p-3 bg-blue-50 rounded-xl text-blue-900"><b>수정 방향</b><p class="mt-1">${escapeHtml(x.suggestion)}</p></div>`:''}</section>`).join('')}
-                ${renderExperimentCard('4. 실험 설계 I',r.experiment1||{})}
-                ${renderExperimentCard('5. 실험 설계 II',r.experiment2||{})}
-                <section class="border border-slate-200 rounded-2xl p-4"><h4 class="font-bold text-sm mb-3">6. 최종 체크리스트</h4><div class="space-y-2">${(r.finalChecklist||[]).map(x=>`<div class="flex items-start gap-2 p-2.5 bg-slate-50 rounded-xl"><div class="shrink-0">${statusBadge(x.status)}</div><div><b class="text-slate-800">${escapeHtml(x.item||'')}</b><p class="text-slate-600 mt-0.5">${escapeHtml(x.why||'')}</p></div></div>`).join('')}</div></section>
-                <section class="border border-blue-200 bg-blue-50 rounded-2xl p-4"><h4 class="font-bold text-blue-900 mb-2">7. 지금 바로 고칠 순서</h4><ol class="list-decimal ml-5 space-y-1 text-blue-900">${bulletList(r.nextSteps).replace(/<li>/g,'<li>')}</ol></section>
-            </div>`;
-            lucide.createIcons();
-        }
-    </script>
-</body>
-</html>
