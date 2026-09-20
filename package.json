@@ -1,0 +1,6 @@
+{
+  "name": "chemistry-proposal-gemini-checker",
+  "version": "2.0.0",
+  "private": true,
+  "description": "고등학교 화학 탐구제안서 Gemini 교사형 점검기 - Vercel 서버리스 버전"
+}
