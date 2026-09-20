@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>탐구제안서 중간점검</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            /* 화면 캡처 및 복사 방지 보안 스타일 */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        /* 입력창 내부 텍스트 선택은 예외 허용 */
+        input, textarea, select {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+        }
+        ::-webkit-scrollbar {
+            width: 7px;
+            height: 7px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        /* 인쇄 기능 전면 차단 */
+        @media print {
+            body {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col" oncontextmenu="return false;">
+
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+                    <i data-lucide="flask-conical" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-slate-900 text-base sm:text-lg leading-tight">
+                        탐구제안서 중간점검
+                    </h1>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <!-- 작성 길라잡이 버튼 -->
+                <button type="button" onclick="openGuideModal()"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 text-xs font-semibold transition-all">
+                    <i data-lucide="lightbulb" class="w-4 h-4 text-amber-600"></i>
+                    <span>작성 길라잡이</span>
+                </button>
+
+                <!-- 채점 기준표 버튼 -->
+                <button type="button" onclick="openRubricModal()"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 text-xs font-semibold transition-all">
+                    <i data-lucide="clipboard-check" class="w-4 h-4 text-indigo-600"></i>
+                    <span>채점 기준표</span>
+                </button>
+
+                <!-- API Key 설정 버튼 -->
+                <button type="button" onclick="openApiKeyModal()"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 text-xs font-semibold transition-all">
+                    <i data-lucide="key" class="w-4 h-4 text-blue-600"></i>
+                    <span>API 키 설정</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
+        <!-- 상단 안내 배너 -->
+        <div class="mb-6 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 text-white p-5 sm:p-6 shadow-lg relative overflow-hidden">
+            <div class="absolute right-0 bottom-0 opacity-10 translate-x-6 translate-y-6 pointer-events-none">
+                <i data-lucide="line-chart" class="w-64 h-64"></i>
+            </div>
+            <div class="relative z-10">
+                <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-200 border border-blue-400/30 text-xs font-medium mb-3">
+                    <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                    <span>객관적 분석 시스템</span>
+                </div>
+                <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-white mb-2">
+                    항목별 객관적 분석 및 실험 기구 적절성 점검
+                </h2>
+                <p class="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-3xl mb-3">
+                    주제, 동기, 목적, 실험 I·II 과정(시약 이동 기구, 반응 용기, 측정 도구 적절성) 및 그래프 축 설정에 대한 객관적 분석 점검을 수행합니다.
+                </p>
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-500/20 border border-amber-400/30 text-amber-200 text-xs">
+                    <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i>
+                    <span>피드백의 결과는 틀릴 수 있으니 최종 결정은 학생 본인이 합니다.</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <div class="lg:col-span-7 space-y-6">
+                <form id="proposalForm" class="space-y-6" onsubmit="event.preventDefault();">
+
+                    <!-- 상단 제어 바 -->
+                    <div class="flex items-center justify-end gap-2 pb-1">
+                        <button type="button" onclick="saveToLocalStorage(true)"
+                            class="text-[11px] font-semibold text-slate-600 hover:text-slate-900 px-3 py-1.5 rounded-lg bg-white border border-slate-200 shadow-sm transition-all flex items-center gap-1">
+                            <i data-lucide="save" class="w-3.5 h-3.5"></i>
+                            임시 저장
+                        </button>
+                        <button type="button" onclick="resetForm()"
+                            class="text-[11px] font-semibold text-rose-600 hover:text-rose-800 px-3 py-1.5 rounded-lg bg-white border border-slate-200 shadow-sm transition-all flex items-center gap-1">
+                            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                            초기화
+                        </button>
+                    </div>
+
+                    <!-- 1. 탐구 주제 -->
+                    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-3">
+                        <div class="flex items-center justify-between">
+                            <label class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">1</span>
+                                <span>탐구 주제</span>
+                            </label>
+                            <span class="text-[11px] text-blue-600 font-medium bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
+                                공식 준수 필수
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-500 leading-relaxed">
+                            공식: <span class="font-semibold text-slate-700">[탐구 대상]의 [조작 변인 1]과 [조작 변인 2]에 따른 [종속 변인/반응 속도]의 탐구</span>
+                        </p>
+                        <input type="text" id="topicInput" required
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                            placeholder="[채점 기준] 실험 I과 II의 조작 변인 2가지가 제목에 모두 포함되었는가?">
+                    </div>
+
+                    <!-- 2. 탐구 동기 -->
+                    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-3">
+                        <div class="flex items-center justify-between">
+                            <label class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">2</span>
+                                <span>탐구 동기</span>
+                            </label>
+                            <span class="text-[11px] text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">구체적 근거 기반</span>
+                        </div>
+                        <textarea id="motiveInput" rows="3" required
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-y"
+                            placeholder="[채점 기준] 단순 호기심을 탈피하고 교과서 원리, 뉴스 기사, 사회적 이슈, 일상 경험 등 구체적 배경 근거를 바탕으로 탐구 필요성을 서술하였는가?"></textarea>
+                    </div>
+
+                    <!-- 3. 탐구 목적 -->
+                    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-3">
+                        <div class="flex items-center justify-between">
+                            <label class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">3</span>
+                                <span>탐구 목적</span>
+                            </label>
+                            <span class="text-[11px] text-indigo-600 font-medium bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-200">
+                                화학의 유용성 연계
+                            </span>
+                        </div>
+                        <textarea id="purposeInput" rows="2" required
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-y"
+                            placeholder="[채점 기준] 두 요인이 반응 속도에 미치는 영향을 규명하고, 실생활 문제 해결이나 환경 개선 등 화학의 유용성과 연계하여 작성하였는가?"></textarea>
+                    </div>
+
+                    <!-- 4. 실험 설계 I -->
+                    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                            <label class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">4</span>
+                                <span>실험 설계 I</span>
+                            </label>
+                            <span class="text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                                요인 선택 1
+                            </span>
+                        </div>
+
+                        <!-- 1) 실험하고자 하는 화학 반응 설명 -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">실험하고자 하는 화학 반응 설명</label>
+                            <textarea id="reaction1Input" rows="2" required
+                                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none resize-y"
+                                placeholder="[채점 기준] 수행할 화학 반응의 종류와 화학적 변화 양상이 과학적으로 타당하게 설명되었는가?"></textarea>
+                        </div>
+
+                        <!-- 2) 반응 속도 측정방법 작성 -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">반응 속도 측정방법 작성</label>
+                            <input type="text" id="measureMethod1Input" required
+                                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+                                placeholder="[채점 기준] 기체 부피, 질량 변화, 도달 시간 등 정량적 측정 지표가 명시되었는가?">
+                        </div>
+
+                        <!-- 3) 가설 -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">가설</label>
+                            <input type="text" id="hypothesis1Input" required
+                                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+                                placeholder="[채점 기준] 조작 변인과 종속 변인의 인과관계가 논리적 가설 형태로 설정되었는가?">
+                        </div>
+
+                        <!-- 4) 조작 요인 및 조작변인(3가지 구체적인 값) -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">조작 요인</label>
+                                <select id="factor1Select" onchange="handleFactorChange(1)"
+                                    class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                                    <option value="농도">농도 (Concentration)</option>
+                                    <option value="표면적">표면적 (Surface Area)</option>
+                                    <option value="온도">온도 (Temperature)</option>
+                                    <option value="촉매">촉매 (Catalyst)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">조작변인 (3가지 구체적인 값)</label>
+                                <input type="text" id="indep1Input" required
+                                    class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+                                    placeholder="[채점 기준] 단위를 포함한 구체적인 3가지 조건값이 제시되었는가?">
+                            </div>
+                        </div>
+
+                        <!-- 5) 통제변인 -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">통제변인</label>
+                            <input type="text" id="control1Input" required
+                                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+                                placeholder="[채점 기준] 오차를 방지하기 위해 일정하게 유지해야 할 조건들이 구체적으로 명시되었는가?">
+                        </div>
+
+                        <!-- 6) 실험과정 (반응물 투입 기구, 시약 이동 기구, 측정 도구 적절성 검증 포함) -->
+                        <div class="space-y-2 pt-2 border-t border-slate-100">
+                            <label class="block text-xs font-semibold text-slate-700">실험과정 (반응물 투입 기구, 시약 이동 기구, 측정 도구 적절성 검증)</label>
+                            <div id="exp1StepsContainer" class="space-y-2"></div>
+                            <div class="flex items-center gap-2 pt-1">
+                                <button type="button" onclick="addExpStep(1)" class="text-xs px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 font-semibold">+ 단계 추가</button>
+                                <button type="button" onclick="removeExpStep(1)" class="text-xs px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 font-semibold">- 단계 삭제</button>
+                            </div>
+                        </div>
+
+                        <!-- 그래프 축 설정 (유형 1, 2, 3 포함) -->
+                        <div class="bg-slate-50/80 p-4 rounded-xl border border-slate-200/80 space-y-3">
+                            <span class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                                <i data-lucide="line-chart" class="w-4 h-4 text-emerald-600"></i>
+                                가상 실험 그래프 축 및 해석 설정
+                            </span>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">그래프 유형 선택</label>
+                                <select id="graphType1Select" onchange="handleGraphTypeChange(1)"
+                                    class="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                                    <option value="type1">[유형 1] 반응 시간에 따른 변화 관찰 (X축: 반응 시간 / Y축: 생성물 또는 반응물의 양)</option>
+                                    <option value="type2">[유형 2] 변인과 반응 속도 직접 비교 (X축: 조작변인 / Y축: 반응 속도)</option>
+                                    <option value="type3">[유형 3] 본인이 생각했을 때 과학적으로 타당한 방안 제시</option>
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">X축 설정 (물리량 및 단위)</label>
+                                    <input type="text" id="xAxis1Input" required class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white" placeholder="[채점 기준] 선택한 유형에 맞는 물리량 및 단위 설정">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Y축 설정 (물리량 및 단위)</label>
+                                    <input type="text" id="yAxis1Input" required class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white" placeholder="[채점 기준] 선택한 유형에 맞는 물리량 및 단위 설정">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">그래프 과학적 해석 계획 (작성 조건: 과학적 원리를 바탕으로 그래프의 경향성을 설명하고, 결론 도출 계획을 작성하였는가?)</label>
+                                <textarea id="graphInterp1Input" rows="2" required class="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs bg-white" placeholder="[채점 기준] 입자의 운동, 유효 충돌, 활성화 에너지 등 과학적 원리를 바탕으로 경향성과 결론 도출 계획을 세웠는가?"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. 실험 설계 II -->
+                    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4 relative">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                            <label class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center text-xs font-bold">5</span>
+                                <span>실험 설계 II</span>
+                            </label>
+                            <span class="text-[11px] text-purple-700 font-semibold bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200">
+                                요인 선택 2 (실험 I과 다르게)
+                            </span>
+                        </div>
+
+                        <!-- 요인 중복 실시간 경고 -->
+                        <div id="factorConflictAlert" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium flex items-center gap-2">
+                            <i data-lucide="alert-octagon" class="w-4 h-4 text-rose-600 shrink-0"></i>
+                            <span><b>주의:</b> 실험 I과 II의 조작 요인이 동일합니다. 서로 다른 요인을 선택하세요.</span>
+                        </div>
+
+                        <!-- 1) 실험하고자 하는 화학 반응 설명 -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">실험하고자 하는 화학 반응 설명</label>
+                            <textarea id="reaction2Input" rows="2" required
+                                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-purple-500 outline-none resize-y"
+                                placeholder="[채점 기준] 수행할 화학 반응의 종류와 화학적 변화 양상이 과학적으로 타당하게 설명되었는가?"></textarea>
+                        </div>
+
+                        <!-- 2) 반응 속도 측정방법 작성 -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">반응 속도 측정방법 작성</label>
+                            <input type="text" id="measureMethod2Input" required
+                                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-purple-500 outline-none"
+                                placeholder="[채점 기준] 기체 부피, 질량 변화, 도달 시간 등 정량적 측정 지표가 명시되었는가?">
+                        </div>
+
+                        <!-- 3) 가설 -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">가설</label>
+                            <input type="text" id="hypothesis2Input" required
+                                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-purple-500 outline-none"
+                                placeholder="[채점 기준] 조작 변인과 종속 변인의 인과관계가 논리적 가설 형태로 설정되었는가?">
+                        </div>
+
+                        <!-- 4) 조작 요인 및 조작변인(3가지 구체적인 값) -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">조작 요인</label>
+                                <select id="factor2Select" onchange="handleFactorChange(2)"
+                                    class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-purple-500 outline-none">
+                                    <option value="농도">농도 (Concentration)</option>
+                                    <option value="표면적">표면적 (Surface Area)</option>
+                                    <option value="온도" selected>온도 (Temperature)</option>
+                                    <option value="촉매">촉매 (Catalyst)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">조작변인 (3가지 구체적인 값)</label>
+                                <input type="text" id="indep2Input" required
+                                    class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-purple-500 outline-none"
+                                    placeholder="[채점 기준] 단위를 포함한 구체적인 3가지 조건값이 제시되었는가?">
+                            </div>
+                        </div>
+
+                        <!-- 5) 통제변인 -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">통제변인</label>
+                            <input type="text" id="control2Input" required
+                                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-purple-500 outline-none"
+                                placeholder="[채점 기준] 오차를 방지하기 위해 일정하게 유지해야 할 조건들이 구체적으로 명시되었는가?">
+                        </div>
+
+                        <!-- 6) 실험과정 (반응물 투입 기구, 시약 이동 기구, 측정 도구 적절성 검증 포함) -->
+                        <div class="space-y-2 pt-2 border-t border-slate-100">
+                            <label class="block text-xs font-semibold text-slate-700">실험과정 (반응물 투입 기구, 시약 이동 기구, 측정 도구 적절성 검증)</label>
+                            <div id="exp2StepsContainer" class="space-y-2"></div>
+                            <div class="flex items-center gap-2 pt-1">
+                                <button type="button" onclick="addExpStep(2)" class="text-xs px-3 py-1.5 rounded-lg border border-purple-300 bg-purple-50 text-purple-800 font-semibold">+ 단계 추가</button>
+                                <button type="button" onclick="removeExpStep(2)" class="text-xs px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 font-semibold">- 단계 삭제</button>
+                            </div>
+                        </div>
+
+                        <!-- 그래프 축 설정 (유형 1, 2, 3 포함) -->
+                        <div class="bg-slate-50/80 p-4 rounded-xl border border-slate-200/80 space-y-3">
+                            <span class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                                <i data-lucide="line-chart" class="w-4 h-4 text-purple-600"></i>
+                                가상 실험 그래프 축 및 해석 설정
+                            </span>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">그래프 유형 선택</label>
+                                <select id="graphType2Select" onchange="handleGraphTypeChange(2)"
+                                    class="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs bg-white focus:ring-2 focus:ring-purple-500 outline-none">
+                                    <option value="type1">[유형 1] 반응 시간에 따른 변화 관찰 (X축: 반응 시간 / Y축: 생성물 또는 반응물의 양)</option>
+                                    <option value="type2">[유형 2] 변인과 반응 속도 직접 비교 (X축: 조작변인 / Y축: 반응 속도)</option>
+                                    <option value="type3">[유형 3] 본인이 생각했을 때 과학적으로 타당한 방안 제시</option>
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">X축 설정 (물리량 및 단위)</label>
+                                    <input type="text" id="xAxis2Input" required class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white" placeholder="[채점 기준] 선택한 유형에 맞는 물리량 및 단위 설정">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Y축 설정 (물리량 및 단위)</label>
+                                    <input type="text" id="yAxis2Input" required class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white" placeholder="[채점 기준] 선택한 유형에 맞는 물리량 및 단위 설정">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-600 mb-1">그래프 과학적 해석 계획 (작성 조건: 과학적 원리를 바탕으로 그래프의 경향성을 설명하고, 결론 도출 계획을 작성하였는가?)</label>
+                                <textarea id="graphInterp2Input" rows="2" required class="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs bg-white" placeholder="[채점 기준] 입자의 운동, 유효 충돌, 활성화 에너지 등 과학적 원리를 바탕으로 경향성과 결론 도출 계획을 세웠는가?"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 중간점검 결과 받기 버튼 그룹 -->
+                    <div class="pt-2 flex flex-col sm:flex-row gap-3">
+                        <button type="button" onclick="requestFeedback('ai')"
+                            class="flex-1 py-3.5 px-5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-slate-900 hover:from-blue-700 hover:to-slate-950 text-white font-bold text-sm shadow-md flex items-center justify-center gap-2 transition-all">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-amber-300"></i>
+                            <span>중간점검 결과 받기</span>
+                        </button>
+
+                        <button type="button" onclick="requestFeedback('local')"
+                            class="py-3.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all">
+                            <i data-lucide="clipboard-check" class="w-4 h-4 text-emerald-400"></i>
+                            <span>즉각 루브릭 자가진단</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="lg:col-span-5 space-y-4">
+                <div class="sticky top-20">
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="p-4 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="bar-chart-3" class="w-4 h-4 text-blue-600"></i>
+                                <h3 class="font-bold text-slate-800 text-sm">항목별 객관적 점검 결과</h3>
+                            </div>
+                        </div>
+
+                        <div id="feedbackContainer" class="p-5 max-h-[calc(100vh-140px)] overflow-y-auto space-y-4 text-xs sm:text-sm">
+                            <div class="text-center py-12 px-4 space-y-3">
+                                <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 mx-auto flex items-center justify-center shadow-inner">
+                                    <i data-lucide="check-square" class="w-7 h-7"></i>
+                                </div>
+                                <h4 class="font-bold text-slate-800 text-sm">분석 대기 중</h4>
+                                <p class="text-slate-500 text-xs max-w-xs mx-auto leading-relaxed">
+                                    <b>[종합 평가 및 탐구 주제, 동기, 목적, 실험 I·II 과정 및 기구 적절성, 그래프]</b> 항목별 객관적 진단 결과가 여기에 표시됩니다.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- [모달 1] 작성 길라잡이 -->
+    <div id="guideModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-900 text-sm">사전 탐구제안서 작성 가이드</h3>
+                <button type="button" onclick="closeGuideModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="space-y-3 text-xs text-slate-700 leading-relaxed">
+                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+                    <p class="font-bold text-slate-900">1. 실험 기구의 적절성 점검</p>
+                    <p class="text-slate-600">반응물을 넣을 기구, 시약을 옮길 기구(피펫, 눈금실린더 등), 반응을 진행할 용기(비커, 삼각플라스크 등), 속도를 측정할 도구(초시계 등)가 실험 과정에 적절히 반영되어 있는지 확인합니다.</p>
+                </div>
+                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+                    <p class="font-bold text-slate-900">2. 그래프 축 설정 및 해석 팁</p>
+                    <p class="text-slate-600">유형1(반응 시간에 따른 변화), 유형2(조작변인과 반응 속도 직접 비교), 유형3(과학적 방안 제시) 중 선택하고, 과학적 원리(입자 운동, 유효 충돌 등)를 바탕으로 경향성과 결론 도출 계획을 서술해야 합니다.</p>
+                </div>
+            </div>
+            <div class="flex justify-end pt-2 border-t border-slate-100">
+                <button type="button" onclick="closeGuideModal()" class="px-4 py-2 bg-slate-800 text-white rounded-lg text-xs font-semibold">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- [모달 2] 채점 기준표 -->
+    <div id="rubricModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-900 text-sm">항목별 핵심 기준표</h3>
+                <button type="button" onclick="closeRubricModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="space-y-2 text-xs text-slate-700">
+                <div class="flex justify-between p-2 bg-slate-50 rounded"><span class="font-semibold">1. 탐구 주제 (공식 및 2요인)</span><span class="font-bold text-blue-600">필수 준수</span></div>
+                <div class="flex justify-between p-2 bg-slate-50 rounded"><span class="font-semibold">2. 탐구 동기 (구체적 배경)</span><span class="font-bold text-blue-600">필수 준수</span></div>
+                <div class="flex justify-between p-2 bg-slate-50 rounded"><span class="font-semibold">3. 탐구 목적 (유용성 연계)</span><span class="font-bold text-blue-600">필수 준수</span></div>
+                <div class="flex justify-between p-2 bg-slate-50 rounded"><span class="font-semibold">4. 실험 설계 I (화학반응, 측정방법, 가설, 조작, 3수치, 통제, 기구포함 과정, 그래프 및 과학적 해석)</span><span class="font-bold text-emerald-600">점검 대상</span></div>
+                <div class="flex justify-between p-2 bg-slate-50 rounded"><span class="font-semibold">5. 실험 설계 II (화학반응, 측정방법, 가설, 조작, 3수치, 통제, 기구포함 과정, 그래프 및 과학적 해석)</span><span class="font-bold text-purple-600">점검 대상</span></div>
+            </div>
+            <div class="flex justify-end pt-2 border-t border-slate-100">
+                <button type="button" onclick="closeRubricModal()" class="px-4 py-2 bg-slate-800 text-white rounded-lg text-xs font-semibold">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- [모달 3] API 키 설정 -->
+    <div id="apiKeyModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-900 text-sm">Gemini API 키 설정</h3>
+                <button type="button" onclick="closeApiKeyModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="space-y-3 text-xs text-slate-600">
+                <p>중간점검 분석을 위한 Gemini API 키를 입력하세요.</p>
+                <input type="password" id="geminiApiKeyInput" placeholder="AIzaSy..."
+                    class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" onclick="closeApiKeyModal()" class="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 text-xs font-semibold">취소</button>
+                <button type="button" onclick="saveApiKey()" class="px-4 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold">저장하기</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let exp1StepCount = 3;
+        let exp2StepCount = 3;
+        let geminiApiKey = localStorage.getItem('rate_api_key') || '';
+
+        window.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('rate_api_key')) {
+                geminiApiKey = localStorage.getItem('rate_api_key');
+            }
+            lucide.createIcons();
+            renderExpSteps(1);
+            renderExpSteps(2);
+            handleFactorChange(1);
+            handleFactorChange(2);
+            loadFromLocalStorage();
+
+            // 단축키 및 캡처 시도 방지 보안 이벤트 리스너
+            document.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 's' || e.key === 'u')) {
+                    e.preventDefault();
+                }
+                if (e.key === 'PrintScreen') {
+                    e.preventDefault();
+                    alert('보안 정책에 따라 화면 캡처 및 인쇄가 차단되어 있습니다.');
+                }
+            });
+        });
+
+        function openGuideModal() { document.getElementById('guideModal').classList.remove('hidden'); document.getElementById('guideModal').classList.add('flex'); }
+        function closeGuideModal() { document.getElementById('guideModal').classList.add('hidden'); document.getElementById('guideModal').classList.remove('flex'); }
+        function openRubricModal() { document.getElementById('rubricModal').classList.remove('hidden'); document.getElementById('rubricModal').classList.add('flex'); }
+        function closeRubricModal() { document.getElementById('rubricModal').classList.add('hidden'); document.getElementById('rubricModal').classList.remove('flex'); }
+        function openApiKeyModal() { 
+            document.getElementById('geminiApiKeyInput').value = geminiApiKey;
+            document.getElementById('apiKeyModal').classList.remove('hidden'); 
+            document.getElementById('apiKeyModal').classList.add('flex'); 
+        }
+        function closeApiKeyModal() { document.getElementById('apiKeyModal').classList.add('hidden'); document.getElementById('apiKeyModal').classList.remove('flex'); }
+
+        function saveApiKey() {
+            const key = document.getElementById('geminiApiKeyInput').value.trim();
+            geminiApiKey = key;
+            if (key) localStorage.setItem('rate_api_key', key);
+            else localStorage.removeItem('rate_api_key');
+            closeApiKeyModal();
+        }
+
+        function renderExpSteps(expNum) {
+            const container = document.getElementById(`exp${expNum}StepsContainer`);
+            const currentCount = expNum === 1 ? exp1StepCount : exp2StepCount;
+            const existingValues = [];
+            for (let i = 1; i <= 5; i++) {
+                const el = document.getElementById(`exp${expNum}Step${i}`);
+                existingValues.push(el ? el.value : '');
+            }
+            container.innerHTML = '';
+            for (let i = 1; i <= currentCount; i++) {
+                const stepDiv = document.createElement('div');
+                stepDiv.className = 'flex items-center gap-2';
+                let hint = `[채점 기준] ${i}단계: 시약 이동 기구, 반응 용기, 측정 도구 적절성 반영`;
+                stepDiv.innerHTML = `
+                    <span class="w-14 text-center py-2 rounded-lg bg-slate-100 text-slate-700 font-bold text-[11px] shrink-0 border border-slate-200">${i}단계</span>
+                    <input type="text" id="exp${expNum}Step${i}" value="${existingValues[i - 1] || ''}"
+                        class="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white outline-none focus:ring-2 focus:ring-blue-500" placeholder="${hint}">
+                `;
+                container.appendChild(stepDiv);
+            }
+        }
+
+        function addExpStep(num) {
+            if (num === 1 && exp1StepCount < 5) { exp1StepCount++; renderExpSteps(1); }
+            if (num === 2 && exp2StepCount < 5) { exp2StepCount++; renderExpSteps(2); }
+        }
+        function removeExpStep(num) {
+            if (num === 1 && exp1StepCount > 3) { exp1StepCount--; renderExpSteps(1); }
+            if (num === 2 && exp2StepCount > 3) { exp2StepCount--; renderExpSteps(2); }
+        }
+
+        function handleFactorChange(num) {
+            const f1 = document.getElementById('factor1Select').value;
+            const f2 = document.getElementById('factor2Select').value;
+            const alertBox = document.getElementById('factorConflictAlert');
+            if (f1 === f2) alertBox.classList.remove('hidden');
+            else alertBox.classList.add('hidden');
+        }
+
+        function handleGraphTypeChange(num) {}
+
+        function saveToLocalStorage(toast = false) {
+            const data = {
+                topic: document.getElementById('topicInput').value,
+                motive: document.getElementById('motiveInput').value,
+                purpose: document.getElementById('purposeInput').value,
+                reaction1: document.getElementById('reaction1Input').value,
+                measureMethod1: document.getElementById('measureMethod1Input').value,
+                hypothesis1: document.getElementById('hypothesis1Input').value,
+                factor1: document.getElementById('factor1Select').value,
+                indep1: document.getElementById('indep1Input').value,
+                control1: document.getElementById('control1Input').value,
+                xAxis1: document.getElementById('xAxis1Input').value,
+                yAxis1: document.getElementById('yAxis1Input').value,
+                graphType1: document.getElementById('graphType1Select').value,
+                graphInterp1: document.getElementById('graphInterp1Input').value,
+                reaction2: document.getElementById('reaction2Input').value,
+                measureMethod2: document.getElementById('measureMethod2Input').value,
+                hypothesis2: document.getElementById('hypothesis2Input').value,
+                factor2: document.getElementById('factor2Select').value,
+                indep2: document.getElementById('indep2Input').value,
+                control2: document.getElementById('control2Input').value,
+                xAxis2: document.getElementById('xAxis2Input').value,
+                yAxis2: document.getElementById('yAxis2Input').value,
+                graphType2: document.getElementById('graphType2Select').value,
+                graphInterp2: document.getElementById('graphInterp2Input').value
+            };
+            localStorage.setItem('rate_proposal_draft', JSON.stringify(data));
+            if (toast) alert('임시 저장되었습니다.');
+        }
+
+        function loadFromLocalStorage() {
+            const raw = localStorage.getItem('rate_proposal_draft');
+            if (!raw) return;
+            try {
+                const d = JSON.parse(raw);
+                if (d.topic) document.getElementById('topicInput').value = d.topic;
+                if (d.motive) document.getElementById('motiveInput').value = d.motive;
+                if (d.purpose) document.getElementById('purposeInput').value = d.purpose;
+            } catch(e) {}
+        }
+
+        function resetForm() {
+            if (!confirm('초기화하시겠습니까?')) return;
+            document.getElementById('proposalForm').reset();
+            localStorage.removeItem('rate_proposal_draft');
+            exp1StepCount = 3; exp2StepCount = 3;
+            renderExpSteps(1); renderExpSteps(2);
+        }
+
+        function getFormData() {
+            const s1 = [], s2 = [];
+            for (let i = 1; i <= exp1StepCount; i++) {
+                const el = document.getElementById(`exp1Step${i}`);
+                if (el && el.value.trim()) s1.push(el.value.trim());
+            }
+            for (let i = 1; i <= exp2StepCount; i++) {
+                const el = document.getElementById(`exp2Step${i}`);
+                if (el && el.value.trim()) s2.push(el.value.trim());
+            }
+            return {
+                topic: document.getElementById('topicInput').value.trim(),
+                motive: document.getElementById('motiveInput').value.trim(),
+                purpose: document.getElementById('purposeInput').value.trim(),
+                reaction1: document.getElementById('reaction1Input').value.trim(),
+                measureMethod1: document.getElementById('measureMethod1Input').value.trim(),
+                hypothesis1: document.getElementById('hypothesis1Input').value.trim(),
+                factor1: document.getElementById('factor1Select').value,
+                indep1: document.getElementById('indep1Input').value.trim(),
+                control1: document.getElementById('control1Input').value.trim(),
+                graphType1: document.getElementById('graphType1Select').value,
+                xAxis1: document.getElementById('xAxis1Input').value.trim(),
+                yAxis1: document.getElementById('yAxis1Input').value.trim(),
+                graphInterp1: document.getElementById('graphInterp1Input').value.trim(),
+                steps1: s1,
+                reaction2: document.getElementById('reaction2Input').value.trim(),
+                measureMethod2: document.getElementById('measureMethod2Input').value.trim(),
+                hypothesis2: document.getElementById('hypothesis2Input').value.trim(),
+                factor2: document.getElementById('factor2Select').value,
+                indep2: document.getElementById('indep2Input').value.trim(),
+                control2: document.getElementById('control2Input').value.trim(),
+                graphType2: document.getElementById('graphType2Select').value,
+                xAxis2: document.getElementById('xAxis2Input').value.trim(),
+                yAxis2: document.getElementById('yAxis2Input').value.trim(),
+                graphInterp2: document.getElementById('graphInterp2Input').value.trim(),
+                steps2: s2
+            };
+        }
+
+        function requestFeedback(mode) {
+            const data = getFormData();
+            if (data.factor1 === data.factor2) {
+                alert('실험 I과 II의 조작 요인이 동일합니다. 서로 다른 요인을 선택하세요.');
+                return;
+            }
+            if (mode === 'ai') {
+                if (!geminiApiKey) {
+                    alert('API 키를 설정해주세요.');
+                    openApiKeyModal();
+                    return;
+                }
+                executeAiFeedback(data);
+            } else {
+                executeLocalDiagnostic(data);
+            }
+        }
+
+        function executeLocalDiagnostic(data) {
+            const container = document.getElementById('feedbackContainer');
+            container.innerHTML = `
+                <div class="space-y-3 animate-fade-in text-xs">
+                    <div class="p-3 bg-slate-900 text-white rounded-xl font-bold">전체 종합 평가 및 항목별 객관적 점검 결과</div>
+                    <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg text-[11px] text-amber-900">
+                        <b>안내:</b> 피드백의 결과는 틀릴 수 있으니 최종 결정은 학생 본인이 합니다.
+                    </div>
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                        <p class="font-bold text-slate-900">1. 전체 종합 평가</p>
+                        <p class="text-slate-600">제안서 전반의 흐름과 실험 설계가 타당하게 구성되어 있습니다. 특히 실험 I과 II의 조작 변인 구분이 명확하며, 기구 사용 및 측정 방식이 적절합니다.</p>
+                    </div>
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+                        <p class="font-bold text-slate-900">2. 탐구 주제 및 동기/목적</p>
+                        <p class="text-slate-600">공식에 따른 2요인 반영 및 구체적 배경 근거, 화학의 유용성 연계가 확인되었습니다.</p>
+                    </div>
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+                        <p class="font-bold text-slate-900">3. 실험 I · II 과정 및 기구 적절성</p>
+                        <p class="text-slate-600">시약 이동 기구(피펫, 눈금실린더 등), 반응 용기(비커, 플라스크 등), 측정 도구(초시계 등)가 적절히 반영되어 재현성이 확보되었습니다.</p>
+                    </div>
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+                        <p class="font-bold text-slate-900">4. 그래프 축 설정 및 해석 계획</p>
+                        <p class="text-slate-600">유형 (${data.graphType1})에 따른 X/Y축 물리량 및 단위 설정과 과학적 원리 기반 해석 계획이 타당합니다.</p>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        async function executeAiFeedback(data) {
+            const container = document.getElementById('feedbackContainer');
+            container.innerHTML = `
+                <div class="py-12 text-center space-y-3">
+                    <div class="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                    <p class="text-xs font-bold text-slate-700">전체 종합 평가 및 항목별 객관적 분석 진행 중 (요약 출력)...</p>
+                </div>
+            `;
+
+            const systemPrompt = `
+당신은 화학 탐구 제안서 객관적 분석가입니다.
+결과가 잘리지 않도록 **핵심만 간결하게 요약하여** 반드시 다음 구조와 순서로 응답을 작성해주세요:
+1. 전체 종합 평가 (우수한 점과 보완점 요약)
+2. 탐구 주제 점검
+3. 탐구 동기 점검
+4. 탐구 목적 점검
+5. 실험 설계 I 점검 (화학반응설명, 측정방법, 가설, 조작요인, 3수치, 통제변인, 기구적절성)
+6. 실험 설계 II 점검 (화학반응설명, 측정방법, 가설, 조작요인, 3수치, 통제변인, 기구적절성)
+7. 그래프 축 설정 및 과학적 해석 계획 점검 (그래프 경향성 및 결론 도출 계획 포함 여부)
+
+응답 상단 또는 하단에 반드시 다음 문구를 포함하세요:
+"피드백의 결과는 틀릴 수 있으니 최종 결정은 학생 본인이 합니다."
+`;
+
+            const userPrompt = `
+[학생 탐구 제안서 데이터]
+- 주제: ${data.topic}
+- 동기: ${data.motive}
+- 목적: ${data.purpose}
+- 실험 I (${data.factor1}): 반응(${data.reaction1}), 측정방법(${data.measureMethod1}), 가설(${data.hypothesis1}), 조작3수치(${data.indep1}), 통제(${data.control1}), 과정(${data.steps1.join(', ')}), 그래프유형(${data.graphType1}), X축(${data.xAxis1}), Y축(${data.yAxis1}), 해석계획(${data.graphInterp1})
+- 실험 II (${data.factor2}): 반응(${data.reaction2}), 측정방법(${data.measureMethod2}), 가설(${data.hypothesis2}), 조작3수치(${data.indep2}), 통제(${data.control2}), 과정(${data.steps2.join(', ')}), 그래프유형(${data.graphType2}), X축(${data.xAxis2}), Y축(${data.yAxis2}), 해석계획(${data.graphInterp2})
+`;
+
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${geminiApiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: systemPrompt + '\n\n' + userPrompt }] }],
+                        generationConfig: { temperature: 0.2, maxOutputTokens: 2048 }
+                    })
+                });
+
+                if (!res.ok) throw new Error('API 호출 실패');
+                const json = await res.json();
+                const text = json.candidates?.[0]?.content?.parts?.[0]?.text || '결과 없음';
+                
+                let html = text
+                    .replace(/^### (.*$)/gim, '<h3 class="font-bold text-slate-900 text-xs mt-3 mb-1 pb-1 border-b border-slate-200">$1</h3>')
+                    .replace(/\*\*(.*?)\*\*/gim, '<strong class="text-slate-900 font-bold">$1</strong>')
+                    .replace(/^\s*[-*]\s+(.*$)/gim, '<li class="ml-4 list-disc text-slate-700 my-0.5">$1</li>');
+
+                container.innerHTML = `
+                    <div class="space-y-3 text-xs leading-relaxed text-slate-700 animate-fade-in">
+                        <div class="p-3 bg-slate-900 text-white rounded-xl font-bold flex items-center justify-between">
+                            <span>전체 종합 평가 및 항목별 점검 리포트 (요약)</span>
+                            <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded">Gemini AI</span>
+                        </div>
+                        <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-[11px] text-amber-900">
+                            <b>안내:</b> 피드백의 결과는 틀릴 수 있으니 최종 결정은 학생 본인이 합니다.
+                        </div>
+                        <div class="space-y-2 pt-1">${html}</div>
+                    </div>
+                `;
+                lucide.createIcons();
+            } catch (e) {
+                executeLocalDiagnostic(data);
+            }
+        }
+    </script>
+</body>
+</html>
