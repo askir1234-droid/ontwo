@@ -1,155 +1,1519 @@
-function renderTeacherReport(report) {
-    const container = document.getElementById('feedbackContainer');
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>탐구제안서 중간점검</title>
 
-    const issues = Array.isArray(report?.issues)
-        ? report.issues.slice(0, 5)
-        : [];
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
 
-    /* 문제가 발견되지 않은 경우 */
-    if (issues.length === 0) {
-        container.innerHTML = `
-            <div class="space-y-4">
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
 
-                <div class="p-5 rounded-2xl bg-emerald-50 border border-emerald-200">
-                    <div class="flex items-start gap-3">
+    body {
+      background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 30%),
+        #f8fafc;
+    }
 
-                        <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700
-                                    flex items-center justify-center shrink-0">
-                            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
-                        </div>
+    textarea,
+    input {
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
 
-                        <div>
-                            <h3 class="font-bold text-emerald-900 text-sm">
-                                큰 문제를 발견하지 못했어
-                            </h3>
+    textarea:focus,
+    input:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
 
-                            <p class="mt-1 text-xs leading-relaxed text-emerald-800">
-                                현재 작성 내용에서 우선적으로 수정해야 할
-                                뚜렷한 오류나 모순을 찾지 못했어.
-                            </p>
-                        </div>
+    .section-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 1.25rem;
+      box-shadow: 0 8px 30px rgba(15, 23, 42, 0.05);
+    }
 
-                    </div>
-                </div>
+    .loading-dot {
+      animation: bounce 1.4s infinite ease-in-out both;
+    }
 
-                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200
-                            text-xs leading-relaxed text-slate-600">
-                    AI 점검은 참고용이야. 실제 실험의 안전성,
-                    수행 가능성 및 최종 내용은 담당 선생님과 다시 확인해.
-                </div>
+    .loading-dot:nth-child(1) {
+      animation-delay: -0.32s;
+    }
+
+    .loading-dot:nth-child(2) {
+      animation-delay: -0.16s;
+    }
+
+    @keyframes bounce {
+      0%, 80%, 100% {
+        transform: scale(0);
+      }
+      40% {
+        transform: scale(1);
+      }
+    }
+  </style>
+</head>
+
+<body class="text-slate-800">
+
+  <!-- 상단 -->
+  <header class="bg-slate-950 text-white">
+    <div class="max-w-6xl mx-auto px-5 py-8">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+
+        <div>
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center">
+              <i data-lucide="flask-conical" class="w-5 h-5"></i>
+            </div>
+
+            <div>
+              <p class="text-xs text-blue-300 font-semibold tracking-wider">
+                CHEMISTRY INQUIRY
+              </p>
+
+              <h1 class="text-2xl md:text-3xl font-bold">
+                탐구제안서 중간점검
+              </h1>
+            </div>
+          </div>
+
+          <p class="text-slate-400 text-sm md:text-base max-w-2xl">
+            작성한 화학 탐구제안서에서 빠진 내용, 서로 맞지 않는 내용,
+            다시 확인해야 할 부분을 점검해.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onclick="openGuideModal()"
+            class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm font-semibold transition"
+          >
+            작성 길라잡이
+          </button>
+
+          <button
+            type="button"
+            onclick="checkServerStatus()"
+            class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-sm font-semibold transition"
+          >
+            Gemini 서버 상태
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+
+  <!-- 메인 -->
+  <main class="max-w-6xl mx-auto px-5 py-8">
+
+    <div class="grid xl:grid-cols-[1fr_380px] gap-6 items-start">
+
+      <!-- 왼쪽 입력 -->
+      <div class="space-y-6">
+
+        <!-- 기본 정보 -->
+        <section class="section-card p-5 md:p-7">
+          <div class="flex items-start gap-3 mb-6">
+            <div class="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
+              <i data-lucide="file-text" class="w-5 h-5"></i>
+            </div>
+
+            <div>
+              <h2 class="text-lg font-bold">1. 탐구 기본 정보</h2>
+              <p class="text-sm text-slate-500 mt-1">
+                탐구 주제와 탐구를 시작하게 된 이유를 작성해.
+              </p>
+            </div>
+          </div>
+
+          <div class="space-y-5">
+
+            <div>
+              <label for="topic" class="block font-semibold mb-2">
+                탐구 주제
+                <span class="text-red-500">*</span>
+              </label>
+
+              <input
+                id="topic"
+                type="text"
+                class="w-full border border-slate-300 rounded-xl px-4 py-3"
+                placeholder="예: 전기차 화재 시 발생하는 유해가스와 안전 대책 탐구"
+              />
+            </div>
+
+            <div>
+              <label for="motive" class="block font-semibold mb-2">
+                탐구 동기
+                <span class="text-red-500">*</span>
+              </label>
+
+              <textarea
+                id="motive"
+                rows="5"
+                class="w-full border border-slate-300 rounded-xl px-4 py-3 resize-y"
+                placeholder="왜 이 주제를 탐구하게 되었는지 작성해."
+              ></textarea>
+            </div>
+
+            <div>
+              <label for="purpose" class="block font-semibold mb-2">
+                탐구 목적
+                <span class="text-red-500">*</span>
+              </label>
+
+              <textarea
+                id="purpose"
+                rows="4"
+                class="w-full border border-slate-300 rounded-xl px-4 py-3 resize-y"
+                placeholder="이 탐구를 통해 무엇을 확인하거나 알아내려는지 작성해."
+              ></textarea>
+            </div>
+
+          </div>
+        </section>
+
+
+        <!-- 실험 설계 I -->
+        <section class="section-card p-5 md:p-7">
+          <div class="flex items-start gap-3 mb-6">
+            <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+              <i data-lucide="test-tube-2" class="w-5 h-5"></i>
+            </div>
+
+            <div>
+              <h2 class="text-lg font-bold">2. 실험 설계 I</h2>
+              <p class="text-sm text-slate-500 mt-1">
+                첫 번째 실험의 가설, 변인, 측정 방법과 과정을 작성해.
+              </p>
+            </div>
+          </div>
+
+          <div class="space-y-5">
+
+            <div>
+              <label for="exp1Hypothesis" class="block font-semibold mb-2">
+                가설
+                <span class="text-red-500">*</span>
+              </label>
+
+              <textarea
+                id="exp1Hypothesis"
+                rows="3"
+                class="w-full border border-slate-300 rounded-xl px-4 py-3"
+                placeholder="예: 독립 변인이 증가하면 종속 변인은 감소할 것이다."
+              ></textarea>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-4">
+
+              <div>
+                <label for="exp1Independent" class="block font-semibold mb-2">
+                  독립 변인
+                  <span class="text-red-500">*</span>
+                </label>
+
+                <input
+                  id="exp1Independent"
+                  type="text"
+                  class="w-full border border-slate-300 rounded-xl px-4 py-3"
+                  placeholder="직접 변화시키는 조건"
+                />
+              </div>
+
+              <div>
+                <label for="exp1Dependent" class="block font-semibold mb-2">
+                  종속 변인
+                  <span class="text-red-500">*</span>
+                </label>
+
+                <input
+                  id="exp1Dependent"
+                  type="text"
+                  class="w-full border border-slate-300 rounded-xl px-4 py-3"
+                  placeholder="측정하거나 관찰하는 결과"
+                />
+              </div>
 
             </div>
-        `;
 
-        lucide.createIcons();
-        return;
+            <div>
+              <label for="exp1Controls" class="block font-semibold mb-2">
+                통제 변인
+              </label>
+
+              <textarea
+                id="exp1Controls"
+                rows="3"
+                class="w-full border border-slate-300 rounded-xl px-4 py-3"
+                placeholder="같게 유지해야 하는 조건을 작성해."
+              ></textarea>
+            </div>
+
+            <div>
+              <label for="exp1Measure" class="block font-semibold mb-2">
+                측정 방법
+                <span class="text-red-500">*</span>
+              </label>
+
+              <textarea
+                id="exp1Measure"
+                rows="4"
+                class="w-full border border-slate-300 rounded-xl px-4 py-3"
+                placeholder="무엇을 어떤 방법이나 기구로 측정할지 작성해."
+              ></textarea>
+            </div>
+
+            <div>
+              <label for="exp1Steps" class="block font-semibold mb-2">
+                실험 과정
+                <span class="text-red-500">*</span>
+              </label>
+
+              <textarea
+                id="exp1Steps"
+                rows="6"
+                class="w-full border border-slate-300 rounded-xl px-4 py-3"
+                placeholder="실험 과정을 순서대로 작성해."
+              ></textarea>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-4">
+
+              <div>
+                <label for="exp1XAxis" class="block font-semibold mb-2">
+                  그래프 X축
+                </label>
+
+                <input
+                  id="exp1XAxis"
+                  type="text"
+                  class="w-full border border-slate-300 rounded-xl px-4 py-3"
+                  placeholder="독립 변인"
+                />
+              </div>
+
+              <div>
+                <label for="exp1YAxis" class="block font-semibold mb-2">
+                  그래프 Y축
+                </label>
+
+                <input
+                  id="exp1YAxis"
+                  type="text"
+                  class="w-full border border-slate-300 rounded-xl px-4 py-3"
+                  placeholder="종속 변인"
+                />
+              </div>
+
+            </div>
+
+          </div>
+        </section>
+
+
+        <!-- 실험 설계 II -->
+        <section class="section-card p-5 md:p-7">
+          <div class="flex items-start gap-3 mb-6">
+            <div class="w-9 h-9 rounded-xl bg-violet-100 text-violet-700 flex items-center justify-center shrink-0">
+              <i data-lucide="microscope" class="w-5 h-5"></i>
+            </div>
+
+            <div>
+              <h2 class="text-lg font-bold">3. 실험 설계 II</h2>
+              <p class="text-sm text-slate-500 mt-1">
+                두 번째 실험의 설계를 작성해.
+              </p>
+            </div>
+          </div>
+
+          <div class="space-y-5">
+
+            <div>
+              <label for="exp2Hypothesis" class="block font-semibold mb-2">
+                가설
+                <span class="text-red-500">*</span>
+              </label>
+
+              <textarea
+                id="exp2Hypothesis"
+                rows="3"
+                class="w-full border border-slate-300 rounded-xl px-4 py-3"
+                placeholder="두 번째 실험에서 확인하려는 가설을 작성해."
+              ></textarea>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-4">
+
+              <div>
+                <label for="exp2Independent" class="block font-semibold mb-2">
+                  독립 변인
+                  <span class="text-red-500">*</span>
+                </label>
+
+                <input
+                  id="exp2Independent"
+                  type="text"
+                  class="w-full border border-slate-300 rounded-xl px-4 py-3"
+                />
+              </div>
+
+              <div>
+                <label for="exp2Dependent" class="block font-semibold mb-2">
+                  종속 변인
+                  <span class="text-red-500">*</span>
+                </label>
+
+                <input
+                  id="exp2Dependent"
+                  type="text"
+                  class="w-full border border-slate-300 rounded-xl px-4 py-3"
+                />
+              </div>
+
+            </div>
+
+            <div>
+              <label for="exp2Controls" class="block font-semibold mb-2">
+                통제 변인
+              </label>
+
+              <textarea
+                id="exp2Controls"
+                rows="3"
+                class="w-full border border-slate-300 rounded-xl px-4 py-3"
+              ></textarea>
+            </div>
+
+            <div>
+              <label for="exp2Measure" class="block font-semibold mb-2">
+                측정 방법
+                <span class="text-red-500">*</span>
+              </label>
+
+              <textarea
+                id="exp2Measure"
+                rows="4"
+                class="w-full border border-slate-300 rounded-xl px-4 py-3"
+              ></textarea>
+            </div>
+
+            <div>
+              <label for="exp2Steps" class="block font-semibold mb-2">
+                실험 과정
+                <span class="text-red-500">*</span>
+              </label>
+
+              <textarea
+                id="exp2Steps"
+                rows="6"
+                class="w-full border border-slate-300 rounded-xl px-4 py-3"
+              ></textarea>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-4">
+
+              <div>
+                <label for="exp2XAxis" class="block font-semibold mb-2">
+                  그래프 X축
+                </label>
+
+                <input
+                  id="exp2XAxis"
+                  type="text"
+                  class="w-full border border-slate-300 rounded-xl px-4 py-3"
+                />
+              </div>
+
+              <div>
+                <label for="exp2YAxis" class="block font-semibold mb-2">
+                  그래프 Y축
+                </label>
+
+                <input
+                  id="exp2YAxis"
+                  type="text"
+                  class="w-full border border-slate-300 rounded-xl px-4 py-3"
+                />
+              </div>
+
+            </div>
+
+          </div>
+        </section>
+
+
+        <!-- 실행 버튼 -->
+        <section class="section-card p-5 md:p-7">
+
+          <button
+            id="feedbackButton"
+            type="button"
+            onclick="requestFeedback()"
+            class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 disabled:cursor-not-allowed text-white rounded-xl px-6 py-4 font-bold text-lg transition flex items-center justify-center gap-2"
+          >
+            <i data-lucide="scan-search" class="w-5 h-5"></i>
+            중간점검 결과 받기
+          </button>
+
+          <div class="flex flex-wrap justify-center gap-4 mt-4 text-xs text-slate-500">
+            <span>✓ 최대 5개 핵심 문제 확인</span>
+            <span>✓ 작성 내용 자동 저장</span>
+            <span>✓ 정답 대신 점검 중심</span>
+          </div>
+
+        </section>
+
+      </div>
+
+
+      <!-- 오른쪽 결과 -->
+      <aside class="xl:sticky xl:top-6">
+
+        <section class="section-card overflow-hidden">
+
+          <div class="bg-slate-950 text-white px-5 py-5">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center">
+                <i data-lucide="clipboard-check" class="w-5 h-5"></i>
+              </div>
+
+              <div>
+                <h2 class="font-bold">중간점검 결과</h2>
+                <p class="text-xs text-slate-400 mt-0.5">
+                  수정이 필요한 부분만 확인해.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div id="feedbackContainer" class="p-5">
+
+            <div class="py-12 text-center">
+              <div class="w-14 h-14 mx-auto bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 mb-4">
+                <i data-lucide="clipboard-list" class="w-7 h-7"></i>
+              </div>
+
+              <p class="font-bold text-slate-700">
+                아직 점검하지 않았어
+              </p>
+
+              <p class="text-sm text-slate-500 mt-2 leading-6">
+                왼쪽에서 탐구제안서를 작성한 후<br>
+                중간점검 결과 받기를 눌러봐.
+              </p>
+            </div>
+
+          </div>
+
+        </section>
+
+        <div class="mt-4 bg-blue-50 border border-blue-200 rounded-2xl p-4">
+          <div class="flex gap-3">
+            <i data-lucide="info" class="w-5 h-5 text-blue-600 shrink-0 mt-0.5"></i>
+
+            <p class="text-xs text-blue-800 leading-5">
+              AI 점검은 참고용이야. 실제 실험의 안전성과 수행 가능성,
+              최종 탐구 내용은 담당 선생님과 다시 확인해.
+            </p>
+          </div>
+        </div>
+
+      </aside>
+
+    </div>
+
+  </main>
+
+
+  <!-- 작성 길라잡이 모달 -->
+  <div
+    id="guideModal"
+    class="hidden fixed inset-0 z-50 bg-black/50 p-4 items-center justify-center"
+  >
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-2xl">
+
+      <div class="flex items-center justify-between px-6 py-5 border-b">
+        <div>
+          <h2 class="font-bold text-lg">작성 길라잡이</h2>
+          <p class="text-sm text-slate-500 mt-1">
+            탐구제안서를 작성할 때 확인할 기본 항목이야.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onclick="closeGuideModal()"
+          class="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center"
+        >
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-5 text-sm leading-6">
+
+        <div>
+          <h3 class="font-bold text-blue-700 mb-1">탐구 주제</h3>
+          <p class="text-slate-600">
+            무엇을 변화시키고 무엇을 확인하려는지 알 수 있도록 구체적으로 작성해.
+          </p>
+        </div>
+
+        <div>
+          <h3 class="font-bold text-blue-700 mb-1">탐구 목적</h3>
+          <p class="text-slate-600">
+            단순히 '알아보기 위해서'보다 탐구를 통해 확인하려는 내용을 분명하게 작성해.
+          </p>
+        </div>
+
+        <div>
+          <h3 class="font-bold text-blue-700 mb-1">가설과 변인</h3>
+          <p class="text-slate-600">
+            가설에 제시한 독립 변인과 종속 변인이 실제 실험 설계와 서로 연결되는지 확인해.
+          </p>
+        </div>
+
+        <div>
+          <h3 class="font-bold text-blue-700 mb-1">측정 방법</h3>
+          <p class="text-slate-600">
+            무엇을 측정하는지뿐 아니라 어떻게 측정할지도 확인해.
+          </p>
+        </div>
+
+        <div>
+          <h3 class="font-bold text-blue-700 mb-1">그래프</h3>
+          <p class="text-slate-600">
+            일반적으로 X축에는 독립 변인, Y축에는 종속 변인을 배치하는지 확인해.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 서버 상태 모달 -->
+  <div
+    id="serverModal"
+    class="hidden fixed inset-0 z-50 bg-black/50 p-4 items-center justify-center"
+  >
+    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl">
+
+      <div class="flex justify-between items-center px-6 py-5 border-b">
+        <h2 class="font-bold text-lg">Gemini 서버 상태</h2>
+
+        <button
+          type="button"
+          onclick="closeServerModal()"
+          class="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center"
+        >
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div id="serverStatusContent" class="p-6">
+      </div>
+
+    </div>
+  </div>
+
+
+  <script>
+    const STORAGE_KEY = 'chemistry_inquiry_proposal_v3';
+
+
+    // --------------------------------------------------
+    // 기본 유틸리티
+    // --------------------------------------------------
+
+    function value(id) {
+      return document.getElementById(id)?.value?.trim() || '';
     }
 
 
-    /* 문제가 발견된 경우 */
+    function escapeHtml(text) {
+      return String(text ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
 
-    const cards = issues.map((issue, index) => {
 
-        const area = escapeHtml(
-            issue?.area || '확인이 필요한 부분'
+    function refreshIcons() {
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+    }
+
+
+    // --------------------------------------------------
+    // 데이터 수집
+    // --------------------------------------------------
+
+    function collectProposal() {
+
+      return {
+        topic: value('topic'),
+        motive: value('motive'),
+        purpose: value('purpose'),
+
+        experiment1: {
+          hypothesis: value('exp1Hypothesis'),
+          independentVariable: value('exp1Independent'),
+          dependentVariable: value('exp1Dependent'),
+          controlVariables: value('exp1Controls'),
+          measurementMethod: value('exp1Measure'),
+          steps: value('exp1Steps'),
+          xAxis: value('exp1XAxis'),
+          yAxis: value('exp1YAxis')
+        },
+
+        experiment2: {
+          hypothesis: value('exp2Hypothesis'),
+          independentVariable: value('exp2Independent'),
+          dependentVariable: value('exp2Dependent'),
+          controlVariables: value('exp2Controls'),
+          measurementMethod: value('exp2Measure'),
+          steps: value('exp2Steps'),
+          xAxis: value('exp2XAxis'),
+          yAxis: value('exp2YAxis')
+        }
+      };
+    }
+
+
+    // --------------------------------------------------
+    // 브라우저 저장
+    // --------------------------------------------------
+
+    function saveProposal() {
+
+      try {
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify(collectProposal())
+        );
+      } catch (error) {
+        console.warn('저장 실패:', error);
+      }
+    }
+
+
+    function setField(id, data) {
+
+      const element = document.getElementById(id);
+
+      if (element && typeof data === 'string') {
+        element.value = data;
+      }
+    }
+
+
+    function loadProposal() {
+
+      try {
+
+        const saved = localStorage.getItem(STORAGE_KEY);
+
+        if (!saved) return;
+
+        const data = JSON.parse(saved);
+
+        setField('topic', data.topic);
+        setField('motive', data.motive);
+        setField('purpose', data.purpose);
+
+        const e1 = data.experiment1 || {};
+
+        setField('exp1Hypothesis', e1.hypothesis);
+        setField('exp1Independent', e1.independentVariable);
+        setField('exp1Dependent', e1.dependentVariable);
+        setField('exp1Controls', e1.controlVariables);
+        setField('exp1Measure', e1.measurementMethod);
+        setField('exp1Steps', e1.steps);
+        setField('exp1XAxis', e1.xAxis);
+        setField('exp1YAxis', e1.yAxis);
+
+        const e2 = data.experiment2 || {};
+
+        setField('exp2Hypothesis', e2.hypothesis);
+        setField('exp2Independent', e2.independentVariable);
+        setField('exp2Dependent', e2.dependentVariable);
+        setField('exp2Controls', e2.controlVariables);
+        setField('exp2Measure', e2.measurementMethod);
+        setField('exp2Steps', e2.steps);
+        setField('exp2XAxis', e2.xAxis);
+        setField('exp2YAxis', e2.yAxis);
+
+      } catch (error) {
+        console.warn('저장된 데이터 불러오기 실패:', error);
+      }
+    }
+
+
+    // --------------------------------------------------
+    // 기본 누락 검사
+    // --------------------------------------------------
+
+    function validateProposal(data) {
+
+      const missing = [];
+
+      if (!data.topic) {
+        missing.push('탐구 주제');
+      }
+
+      if (!data.motive) {
+        missing.push('탐구 동기');
+      }
+
+      if (!data.purpose) {
+        missing.push('탐구 목적');
+      }
+
+      if (!data.experiment1.hypothesis) {
+        missing.push('실험 설계 I의 가설');
+      }
+
+      if (!data.experiment1.independentVariable) {
+        missing.push('실험 설계 I의 독립 변인');
+      }
+
+      if (!data.experiment1.dependentVariable) {
+        missing.push('실험 설계 I의 종속 변인');
+      }
+
+      if (!data.experiment1.measurementMethod) {
+        missing.push('실험 설계 I의 측정 방법');
+      }
+
+      if (!data.experiment1.steps) {
+        missing.push('실험 설계 I의 실험 과정');
+      }
+
+      if (!data.experiment2.hypothesis) {
+        missing.push('실험 설계 II의 가설');
+      }
+
+      if (!data.experiment2.independentVariable) {
+        missing.push('실험 설계 II의 독립 변인');
+      }
+
+      if (!data.experiment2.dependentVariable) {
+        missing.push('실험 설계 II의 종속 변인');
+      }
+
+      if (!data.experiment2.measurementMethod) {
+        missing.push('실험 설계 II의 측정 방법');
+      }
+
+      if (!data.experiment2.steps) {
+        missing.push('실험 설계 II의 실험 과정');
+      }
+
+      return missing;
+    }
+
+
+    // --------------------------------------------------
+    // Gemini 점검 요청
+    // --------------------------------------------------
+
+    async function requestFeedback() {
+
+      const button = document.getElementById('feedbackButton');
+      const data = collectProposal();
+
+      saveProposal();
+
+      const missing = validateProposal(data);
+
+      /*
+        입력 누락이 너무 많으면 Gemini를 호출하지 않고
+        브라우저에서 바로 알려준다.
+        무료 API 호출량을 아끼기 위한 기능.
+      */
+
+      if (missing.length >= 5) {
+
+        renderTeacherReport({
+          issues: missing.slice(0, 5).map(item => ({
+            area: item,
+            problem: '이 항목이 작성되지 않았어.'
+          })),
+          aiChecked: false,
+          notice: '먼저 비어 있는 항목을 작성한 뒤 다시 점검해봐.'
+        });
+
+        document
+          .getElementById('feedbackContainer')
+          ?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+          });
+
+        return;
+      }
+
+
+      showLoading();
+
+      button.disabled = true;
+
+      try {
+
+        await executeAiFeedback(data);
+
+      } catch (error) {
+
+        console.error(error);
+
+        renderError(
+          error?.message ||
+          '중간점검 중 오류가 발생했어.'
         );
 
-        const problem = escapeHtml(
-            issue?.problem || '작성 내용을 다시 확인해봐.'
-        );
+      } finally {
 
-        return `
-            <div class="p-4 rounded-2xl border border-amber-200 bg-amber-50">
+        button.disabled = false;
 
-                <div class="flex items-start gap-3">
-
-                    <div class="w-7 h-7 rounded-lg bg-amber-100
-                                text-amber-800 flex items-center
-                                justify-center font-bold text-xs shrink-0">
-                        ${index + 1}
-                    </div>
-
-                    <div class="min-w-0">
-
-                        <div class="flex items-center gap-2 mb-1">
-
-                            <span class="font-bold text-slate-900 text-sm">
-                                ${area}
-                            </span>
-
-                            <span class="px-2 py-0.5 rounded-full
-                                         bg-white border border-amber-200
-                                         text-[10px] font-bold text-amber-700">
-                                다시 확인
-                            </span>
-
-                        </div>
-
-                        <p class="text-xs sm:text-sm leading-relaxed text-slate-700">
-                            ${problem}
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </div>
-        `;
-    }).join('');
+        refreshIcons();
+      }
+    }
 
 
-    container.innerHTML = `
-        <div class="space-y-4">
+    async function executeAiFeedback(data) {
 
-            <div class="p-4 rounded-2xl bg-slate-900 text-white">
+      const controller = new AbortController();
 
-                <div class="flex items-center gap-2 mb-2">
-
-                    <i data-lucide="search-check"
-                       class="w-5 h-5 text-amber-300"></i>
-
-                    <h3 class="font-bold text-sm">
-                        중간점검 결과
-                    </h3>
-
-                </div>
-
-                <p class="text-xs text-slate-300 leading-relaxed">
-                    작성 내용에서 우선 다시 확인하면 좋은 부분을
-                    ${issues.length}개 찾았어.
-                </p>
-
-            </div>
+      const timeout = setTimeout(() => {
+        controller.abort();
+      }, 20000);
 
 
-            ${cards}
+      try {
+
+        const response = await fetch('/api/feedback', {
+          method: 'POST',
+
+          headers: {
+            'Content-Type': 'application/json'
+          },
+
+          body: JSON.stringify({
+            proposal: data
+          }),
+
+          signal: controller.signal
+        });
 
 
-            <div class="p-4 rounded-xl bg-blue-50 border border-blue-200">
+        let result = {};
 
-                <div class="flex gap-2">
-
-                    <i data-lucide="info"
-                       class="w-4 h-4 text-blue-600 shrink-0 mt-0.5"></i>
-
-                    <p class="text-xs leading-relaxed text-blue-900">
-                        AI가 제안서를 대신 수정하거나 정답을 작성하지 않아.
-                        위에서 표시된 부분을 참고해서 네가 직접 내용을
-                        다시 확인하고 수정해봐.
-                    </p>
-
-                </div>
-
-            </div>
+        try {
+          result = await response.json();
+        } catch (error) {
+          throw new Error(
+            '서버 응답을 읽을 수 없어. 잠시 후 다시 시도해줘.'
+          );
+        }
 
 
-            <p class="text-[11px] text-center text-slate-400 leading-relaxed">
-                AI의 판단은 틀릴 수 있어.
-                최종 내용과 실험 안전성은 담당 선생님과 확인해.
-            </p>
+        if (!response.ok) {
+
+          throw new Error(
+            result?.message ||
+            result?.error ||
+            'Gemini 점검 요청을 완료하지 못했어.'
+          );
+        }
+
+
+        if (!result?.report) {
+
+          throw new Error(
+            '서버에서 점검 결과가 전달되지 않았어.'
+          );
+        }
+
+
+        renderTeacherReport(result.report);
+
+      } catch (error) {
+
+        if (error.name === 'AbortError') {
+
+          throw new Error(
+            '점검 시간이 너무 오래 걸리고 있어. 잠시 후 다시 시도해줘.'
+          );
+        }
+
+        throw error;
+
+      } finally {
+
+        clearTimeout(timeout);
+      }
+    }
+
+
+    // --------------------------------------------------
+    // 로딩 화면
+    // --------------------------------------------------
+
+    function showLoading() {
+
+      const container =
+        document.getElementById('feedbackContainer');
+
+      container.innerHTML = `
+        <div class="py-14 text-center">
+
+          <div class="w-14 h-14 mx-auto rounded-2xl bg-blue-50 flex items-center justify-center mb-5">
+            <i
+              data-lucide="scan-search"
+              class="w-7 h-7 text-blue-600"
+            ></i>
+          </div>
+
+          <p class="font-bold text-slate-800">
+            탐구제안서를 점검하고 있어
+          </p>
+
+          <p class="text-sm text-slate-500 mt-2">
+            빠진 내용이나 서로 맞지 않는 부분을 확인하는 중이야.
+          </p>
+
+          <div class="flex justify-center gap-2 mt-6">
+
+            <span
+              class="loading-dot w-2.5 h-2.5 bg-blue-600 rounded-full"
+            ></span>
+
+            <span
+              class="loading-dot w-2.5 h-2.5 bg-blue-600 rounded-full"
+            ></span>
+
+            <span
+              class="loading-dot w-2.5 h-2.5 bg-blue-600 rounded-full"
+            ></span>
+
+          </div>
 
         </div>
-    `;
+      `;
 
-    lucide.createIcons();
-}
+      refreshIcons();
+    }
+
+
+    // --------------------------------------------------
+    // ★ 새 feedback.js와 맞는 결과 출력 함수
+    // --------------------------------------------------
+
+    function renderTeacherReport(report) {
+
+      const container =
+        document.getElementById('feedbackContainer');
+
+      const issues =
+        Array.isArray(report?.issues)
+          ? report.issues.slice(0, 5)
+          : [];
+
+      const aiChecked =
+        report?.aiChecked !== false;
+
+      const notice =
+        typeof report?.notice === 'string'
+          ? report.notice
+          : '';
+
+
+      /*
+        AI가 실행되지 않았고 문제도 없는 경우
+        "문제가 없다"고 단정하지 않는다.
+      */
+
+      if (issues.length === 0 && !aiChecked) {
+
+        container.innerHTML = `
+          <div class="space-y-4">
+
+            <div class="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+
+              <div class="flex gap-3">
+
+                <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                  <i
+                    data-lucide="circle-alert"
+                    class="w-5 h-5"
+                  ></i>
+                </div>
+
+                <div>
+
+                  <h3 class="font-bold text-amber-900">
+                    기본 항목 점검 완료
+                  </h3>
+
+                  <p class="text-sm text-amber-800 mt-2 leading-6">
+                    ${
+                      escapeHtml(
+                        notice ||
+                        '기본 누락 점검에서는 큰 문제를 찾지 못했지만 AI 내용 점검은 완료되지 않았어.'
+                      )
+                    }
+                  </p>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+        `;
+
+        refreshIcons();
+
+        return;
+      }
+
+
+      /*
+        문제가 발견되지 않은 경우
+      */
+
+      if (issues.length === 0) {
+
+        container.innerHTML = `
+          <div class="space-y-4">
+
+            <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+
+              <div class="flex gap-3">
+
+                <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                  <i
+                    data-lucide="circle-check"
+                    class="w-5 h-5"
+                  ></i>
+                </div>
+
+                <div>
+
+                  <h3 class="font-bold text-emerald-900">
+                    큰 문제를 발견하지 못했어
+                  </h3>
+
+                  <p class="text-sm text-emerald-800 mt-2 leading-6">
+                    현재 작성 내용에서 우선적으로 수정해야 할 뚜렷한 오류나 모순을 찾지 못했어.
+                  </p>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            <div class="rounded-xl bg-slate-50 border border-slate-200 p-4">
+              <p class="text-xs text-slate-600 leading-5">
+                AI 점검은 참고용이야. 실제 실험의 안전성, 수행 가능성과 최종 내용은 담당 선생님과 다시 확인해.
+              </p>
+            </div>
+
+          </div>
+        `;
+
+        refreshIcons();
+
+        return;
+      }
+
+
+      /*
+        문제가 발견된 경우
+      */
+
+      const cards = issues
+        .map((issue, index) => {
+
+          const area =
+            escapeHtml(
+              issue?.area ||
+              '확인이 필요한 부분'
+            );
+
+          const problem =
+            escapeHtml(
+              issue?.problem ||
+              '작성 내용을 다시 확인해봐.'
+            );
+
+
+          return `
+            <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+
+              <div class="flex gap-3">
+
+                <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 font-bold flex items-center justify-center shrink-0">
+                  ${index + 1}
+                </div>
+
+                <div class="min-w-0">
+
+                  <p class="font-bold text-amber-950">
+                    ${area}
+                  </p>
+
+                  <p class="text-sm text-amber-900 mt-2 leading-6">
+                    ${problem}
+                  </p>
+
+                </div>
+
+              </div>
+
+            </div>
+          `;
+        })
+        .join('');
+
+
+      const noticeHtml = notice
+        ? `
+          <div class="rounded-xl border border-blue-200 bg-blue-50 p-4">
+            <p class="text-xs text-blue-800 leading-5">
+              ${escapeHtml(notice)}
+            </p>
+          </div>
+        `
+        : '';
+
+
+      container.innerHTML = `
+        <div class="space-y-4">
+
+          <div>
+            <div class="flex items-center gap-2">
+              <i
+                data-lucide="clipboard-check"
+                class="w-5 h-5 text-blue-600"
+              ></i>
+
+              <h3 class="font-bold text-slate-900">
+                다시 확인할 부분
+              </h3>
+            </div>
+
+            <p class="text-sm text-slate-500 mt-2">
+              우선 확인하면 좋은 부분을
+              <strong class="text-slate-700">
+                ${issues.length}개
+              </strong>
+              찾았어.
+            </p>
+          </div>
+
+          ${cards}
+
+          ${noticeHtml}
+
+          <div class="rounded-xl bg-blue-50 border border-blue-200 p-4">
+
+            <p class="text-xs text-blue-800 leading-5">
+              AI가 제안서를 대신 수정하거나 정답을 작성하지 않아.
+              위의 점검 내용을 참고해서 네가 직접 내용을 다시 확인하고 수정해봐.
+            </p>
+
+          </div>
+
+        </div>
+      `;
+
+      refreshIcons();
+    }
+
+
+    // --------------------------------------------------
+    // 오류 화면
+    // --------------------------------------------------
+
+    function renderError(message) {
+
+      const container =
+        document.getElementById('feedbackContainer');
+
+      container.innerHTML = `
+        <div class="rounded-2xl border border-red-200 bg-red-50 p-5">
+
+          <div class="flex gap-3">
+
+            <div class="w-9 h-9 rounded-xl bg-red-100 text-red-700 flex items-center justify-center shrink-0">
+              <i
+                data-lucide="triangle-alert"
+                class="w-5 h-5"
+              ></i>
+            </div>
+
+            <div>
+
+              <h3 class="font-bold text-red-900">
+                점검을 완료하지 못했어
+              </h3>
+
+              <p class="text-sm text-red-800 mt-2 leading-6">
+                ${escapeHtml(message)}
+              </p>
+
+              <button
+                type="button"
+                onclick="checkServerStatus()"
+                class="mt-4 text-sm font-bold text-red-700 underline underline-offset-4"
+              >
+                서버 상태 확인
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+      `;
+
+      refreshIcons();
+    }
+
+
+    // --------------------------------------------------
+    // Gemini 서버 상태
+    // --------------------------------------------------
+
+    async function checkServerStatus() {
+
+      const modal =
+        document.getElementById('serverModal');
+
+      const content =
+        document.getElementById('serverStatusContent');
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+
+      content.innerHTML = `
+        <div class="py-8 text-center">
+
+          <div class="w-10 h-10 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin mx-auto"></div>
+
+          <p class="text-sm text-slate-500 mt-4">
+            서버 상태를 확인하고 있어...
+          </p>
+
+        </div>
+      `;
+
+
+      try {
+
+        const response =
+          await fetch('/api/health', {
+            cache: 'no-store'
+          });
+
+        const data =
+          await response.json();
+
+
+        if (!response.ok || !data?.ok) {
+          throw new Error(
+            data?.message ||
+            '서버 상태를 확인하지 못했어.'
+          );
+        }
+
+
+        content.innerHTML = `
+          <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+
+            <div class="flex gap-3">
+
+              <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                <i
+                  data-lucide="server"
+                  class="w-5 h-5"
+                ></i>
+              </div>
+
+              <div>
+
+                <h3 class="font-bold text-emerald-900">
+                  서버 연결 정상
+                </h3>
+
+                <p class="text-sm text-emerald-800 mt-2">
+                  Vercel 서버가 정상적으로 응답하고 있어.
+                </p>
+
+                ${
+                  data.model
+                    ? `
+                      <p class="text-xs text-emerald-700 mt-3">
+                        모델:
+                        <strong>
+                          ${escapeHtml(data.model)}
+                        </strong>
+                      </p>
+                    `
+                    : ''
+                }
+
+                ${
+                  data.geminiConfigured === false
+                    ? `
+                      <p class="text-xs text-red-700 mt-3">
+                        GEMINI_API_KEY 환경변수를 확인해야 해.
+                      </p>
+                    `
+                    : ''
+                }
+
+              </div>
+
+            </div>
+
+          </div>
+        `;
+
+      } catch (error) {
+
+        content.innerHTML = `
+          <div class="rounded-2xl border border-red-200 bg-red-50 p-5">
+
+            <h3 class="font-bold text-red-900">
+              서버 연결 확인 필요
+            </h3>
+
+            <p class="text-sm text-red-800 mt-2 leading-6">
+              ${escapeHtml(error?.message || '서버 연결에 실패했어.')}
+            </p>
+
+          </div>
+        `;
+      }
+
+
+      refreshIcons();
+    }
+
+
+    function closeServerModal() {
+
+      const modal =
+        document.getElementById('serverModal');
+
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+
+    // --------------------------------------------------
+    // 작성 길라잡이
+    // --------------------------------------------------
+
+    function openGuideModal() {
+
+      const modal =
+        document.getElementById('guideModal');
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+
+      refreshIcons();
+    }
+
+
+    function closeGuideModal() {
+
+      const modal =
+        document.getElementById('guideModal');
+
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+
+    // --------------------------------------------------
+    // 초기화
+    // --------------------------------------------------
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      () => {
+
+        loadProposal();
+
+        document
+          .querySelectorAll('input, textarea')
+          .forEach(element => {
+
+            element.addEventListener(
+              'input',
+              saveProposal
+            );
+          });
+
+
+        document
+          .getElementById('guideModal')
+          .addEventListener(
+            'click',
+            event => {
+
+              if (
+                event.target.id ===
+                'guideModal'
+              ) {
+                closeGuideModal();
+              }
+            }
+          );
+
+
+        document
+          .getElementById('serverModal')
+          .addEventListener(
+            'click',
+            event => {
+
+              if (
+                event.target.id ===
+                'serverModal'
+              ) {
+                closeServerModal();
+              }
+            }
+          );
+
+
+        refreshIcons();
+      }
+    );
+
+  </script>
+
+</body>
+</html>
